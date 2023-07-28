@@ -7,6 +7,7 @@ from math import sqrt
 from myGym.utils.vector import Vector
 import random
 
+
 class Reward:
     """
     Reward base class for reward signal calculation and visualization
@@ -15,23 +16,24 @@ class Reward:
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task=None):
         self.env = env
         self.task = task
         self.rewards_history = []
         self.current_network = 0
         self.num_networks = env.num_networks
-        #self.check_num_networks()
+        # self.check_num_networks()
         self.network_rewards = [0] * self.num_networks
 
     def network_switch_control(self, observation):
         if self.env.num_networks <= 1:
             print("Cannot switch networks in a single-network scenario")
         else:
-           if self.env.network_switcher == "gt":
+            if self.env.network_switcher == "gt":
                 self.current_network = self.decide(observation)
-           else:
-               raise NotImplementedError("Currently only implemented ground truth ('gt') network switcher")
+            else:
+                raise NotImplementedError("Currently only implemented ground truth ('gt') network switcher")
         return self.current_network
 
     def compute(self, observation=None):
@@ -47,8 +49,10 @@ class Reward:
         save_dir = os.path.join(self.env.logdir, "rewards")
         os.makedirs(save_dir, exist_ok=True)
         if self.env.episode_steps > 0:
-            results_plotter.EPISODES_WINDOW=50
-            results_plotter.plot_curves([(np.arange(self.env.episode_steps),np.asarray(self.rewards_history[-self.env.episode_steps:]))],'step','Step rewards')
+            results_plotter.EPISODES_WINDOW = 50
+            results_plotter.plot_curves(
+                [(np.arange(self.env.episode_steps), np.asarray(self.rewards_history[-self.env.episode_steps:]))],
+                'step', 'Step rewards')
             plt.ylabel("reward")
             plt.gcf().set_size_inches(8, 6)
             plt.savefig(save_dir + "/reward_over_steps_episode{}.png".format(self.env.episode_number))
@@ -61,8 +65,10 @@ class Reward:
         save_dir = os.path.join(self.env.logdir, "rewards")
         os.makedirs(save_dir, exist_ok=True)
         if self.env.episode_number > 0:
-            results_plotter.EPISODES_WINDOW=10
-            results_plotter.plot_curves([(np.arange(self.env.episode_number),np.asarray(self.env.episode_final_reward[-self.env.episode_number:]))],'episode','Episode rewards')
+            results_plotter.EPISODES_WINDOW = 10
+            results_plotter.plot_curves([(np.arange(self.env.episode_number),
+                                          np.asarray(self.env.episode_final_reward[-self.env.episode_number:]))],
+                                        'episode', 'Episode rewards')
             plt.ylabel("reward")
             plt.gcf().set_size_inches(8, 6)
             plt.savefig(save_dir + "/reward_over_episodes_episode{}.png".format(self.env.episode_number))
@@ -77,13 +83,14 @@ class DistanceReward(Reward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(DistanceReward, self).__init__(env, task)
         self.prev_obj1_position = None
         self.prev_obj2_position = None
 
     def decide(self, observation=None):
-        return random.randint(0, self.env.num_networks-1)
+        return random.randint(0, self.env.num_networks - 1)
 
     def compute(self, observation):
         """
@@ -97,7 +104,7 @@ class DistanceReward(Reward):
         o1 = observation["actual_state"]
         o2 = observation["goal_state"]
         reward = self.calc_dist_diff(o1, o2)
-        #self.task.check_distance_threshold(observation)
+        # self.task.check_distance_threshold(observation)
         self.task.check_goal()
         self.rewards_history.append(reward)
         return reward
@@ -141,8 +148,9 @@ class ComplexDistanceReward(DistanceReward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
-        super(ComplexDistanceReward,self).__init__(env, task)
+        super(ComplexDistanceReward, self).__init__(env, task)
         self.prev_obj3_position = None
 
     def compute(self, observation):
@@ -155,8 +163,9 @@ class ComplexDistanceReward(DistanceReward):
             :return reward: (float) Reward signal for the environment
         """
         gripper_name = [x for x in self.env.task.obs_template["additional_obs"] if "endeff" in x][0]
-        reward = self.calc_dist_diff(observation["actual_state"], observation["goal_state"], observation["additional_obs"][gripper_name])
-        #self.task.check_distance_threshold(observation=observation)
+        reward = self.calc_dist_diff(observation["actual_state"], observation["goal_state"],
+                                     observation["additional_obs"][gripper_name])
+        # self.task.check_distance_threshold(observation=observation)
         self.task.check_goal()
         self.rewards_history.append(reward)
         return reward
@@ -193,7 +202,9 @@ class ComplexDistanceReward(DistanceReward):
         prev_diff_23 = self.task.calc_distance(self.prev_obj2_position, self.prev_obj3_position)
         current_diff_23 = self.task.calc_distance(obj2_position, obj3_position)
 
-        norm_diff = (prev_diff_13 - current_diff_13) / prev_diff_13 + (prev_diff_23 - current_diff_23) / prev_diff_23 + 10*(prev_diff_12 - current_diff_12) / prev_diff_12
+        norm_diff = (prev_diff_13 - current_diff_13) / prev_diff_13 + (
+                    prev_diff_23 - current_diff_23) / prev_diff_23 + 10 * (
+                                prev_diff_12 - current_diff_12) / prev_diff_12
 
         self.prev_obj1_position = obj1_position
         self.prev_obj2_position = obj2_position
@@ -210,6 +221,7 @@ class SparseReward(Reward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(SparseReward, self).__init__(env, task)
 
@@ -243,12 +255,13 @@ class VectorReward(Reward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(VectorReward, self).__init__(env, task)
 
-        self.prev_goals_positions = [None]*(len(self.env.task_objects_names))
-        self.prev_distractors_positions = [None]*(len(self.env.distractors))
-        self.prev_links_positions = [None]*11
+        self.prev_goals_positions = [None] * (len(self.env.task_objects_names))
+        self.prev_distractors_positions = [None] * (len(self.env.distractors))
+        self.prev_links_positions = [None] * 11
         self.prev_gipper_position = [None, None, None]
 
         self.touches = 0
@@ -257,9 +270,9 @@ class VectorReward(Reward):
         """
         Reset stored value of distance between 2 objects. Call this after the end of an episode.
         """
-        self.prev_goals_positions = [None]*(len(self.env.task_objects_names))
-        self.prev_distractors_positions = [None]*(len(self.env.distractors))
-        self.prev_links_positions = [None]*(self.env.robot.end_effector_index+1)
+        self.prev_goals_positions = [None] * (len(self.env.task_objects_names))
+        self.prev_distractors_positions = [None] * (len(self.env.distractors))
+        self.prev_links_positions = [None] * (self.env.robot.end_effector_index + 1)
         self.prev_gipper_position = [None, None, None]
 
         self.touches = 0
@@ -279,8 +292,8 @@ class VectorReward(Reward):
         reward = 0
 
         contact_points = [self.env.p.getContactPoints(self.env.robot.robot_uid,
-                          self.env.env_objects[-1].uid, x, -1)
-                          for x in range(0,self.env.robot.end_effector_index+1)]
+                                                      self.env.env_objects[-1].uid, x, -1)
+                          for x in range(0, self.env.robot.end_effector_index + 1)]
         for p in contact_points:
             if p:
                 reward = -5
@@ -298,11 +311,12 @@ class VectorReward(Reward):
                     return reward
 
         # end_effector  = links[self.env.robot.gripper_index]
-        gripper = links[-1] # = end effector
-        gripper       = links[-1] # = end effector
+        gripper = links[-1]  # = end effector
+        gripper = links[-1]  # = end effector
         goal_position = goals[0]
         distractor = self.env.env_objects[1]
-        closest_distractor_points = self.env.p.getClosestPoints(self.env.robot.robot_uid, distractor.uid, self.env.robot.gripper_index)
+        closest_distractor_points = self.env.p.getClosestPoints(self.env.robot.robot_uid, distractor.uid,
+                                                                self.env.robot.gripper_index)
 
         minimum = float('inf')
         for point in closest_distractor_points:
@@ -313,8 +327,9 @@ class VectorReward(Reward):
         if not self.prev_gipper_position[0]:
             self.prev_gipper_position = gripper
 
-        pull_amplifier = self.task.calc_distance(self.prev_gipper_position, goal_position)/1
-        push_amplifier = (1/pow(self.task.calc_distance(closest_distractor_point, self.prev_gipper_position), 1/2))-2
+        pull_amplifier = self.task.calc_distance(self.prev_gipper_position, goal_position) / 1
+        push_amplifier = (1 / pow(self.task.calc_distance(closest_distractor_point, self.prev_gipper_position),
+                                  1 / 2)) - 2
 
         if push_amplifier < 0:
             push_amplifier = 0
@@ -354,9 +369,12 @@ class VectorReward(Reward):
         return reward
 
     def visualize_vectors(self, gripper, goal_position, force_vector, optimal_vector):
-        self.env.p.addUserDebugLine(self.prev_gipper_position, goal_position, lineColorRGB=(255, 255, 255), lineWidth = 1, lifeTime = 0.1)
-        self.env.p.addUserDebugLine(gripper, np.add(np.array(force_vector), np.array(gripper)), lineColorRGB=(255, 0, 0), lineWidth = 1, lifeTime = 0.1)
-        self.env.p.addUserDebugLine(gripper, np.add(np.array(optimal_vector*100), np.array(gripper)), lineColorRGB=(0, 0, 255), lineWidth = 1, lifeTime = 0.1)
+        self.env.p.addUserDebugLine(self.prev_gipper_position, goal_position, lineColorRGB=(255, 255, 255), lineWidth=1,
+                                    lifeTime=0.1)
+        self.env.p.addUserDebugLine(gripper, np.add(np.array(force_vector), np.array(gripper)),
+                                    lineColorRGB=(255, 0, 0), lineWidth=1, lifeTime=0.1)
+        self.env.p.addUserDebugLine(gripper, np.add(np.array(optimal_vector * 100), np.array(gripper)),
+                                    lineColorRGB=(0, 0, 255), lineWidth=1, lifeTime=0.1)
 
     def fill_objects_lists(self, goals, distractors, arm, links, observation):
 
@@ -368,19 +386,19 @@ class VectorReward(Reward):
 
         j = 0
         while len(goals) < len(self.env.task_objects_names):
-            goals.append(list(observation[j:j+3]))
+            goals.append(list(observation[j:j + 3]))
             j += 3
 
         while len(distractors) < len(self.env.distractors):
-            distractors.append(list(observation[j:j+3]))
+            distractors.append(list(observation[j:j + 3]))
             j += 3
 
         while len(arm) < 1:
-            arm.append(list(observation[j:j+3]))
+            arm.append(list(observation[j:j + 3]))
             j += 3
 
         while len(links) < len(self.env.robot.observe_all_links):
-            links.append(list(observation[j:j+3]))
+            links.append(list(observation[j:j + 3]))
             j += 3
 
     def add_vectors(self, v1, v2):
@@ -395,7 +413,7 @@ class VectorReward(Reward):
     def get_dot_product(self, v1, v2):
         product = 0
         for i in range(len(v1)):
-            product += v1[i]* v2[i]
+            product += v1[i] * v2[i]
         return product
 
     def move_to_origin(self, vector):
@@ -409,7 +427,7 @@ class VectorReward(Reward):
 
     def set_vector_len(self, vector, len):
         norm = self.count_vector_norm(vector)
-        vector = self.multiply_vector(vector, 1/norm)
+        vector = self.multiply_vector(vector, 1 / norm)
         return self.multiply_vector(vector, len)
 
 
@@ -421,6 +439,7 @@ class SwitchReward(DistanceReward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(SwitchReward, self).__init__(env, task)
         self.x_obj = None
@@ -443,9 +462,9 @@ class SwitchReward(DistanceReward):
         self.debug = True
 
         # coefficients used to calculate reward
-        self.k_w = 0.4    # coefficient for distance between actual position of robot's gripper and generated line
-        self.k_d = 0.3    # coefficient for absolute distance between gripper and end position
-        self.k_a = 1      # coefficient for calculated angle reward
+        self.k_w = 0.4  # coefficient for distance between actual position of robot's gripper and generated line
+        self.k_d = 0.3  # coefficient for absolute distance between gripper and end position
+        self.k_a = 1  # coefficient for calculated angle reward
 
     def compute(self, observation):
         """
@@ -459,7 +478,7 @@ class SwitchReward(DistanceReward):
         """
         o1 = observation["goal_state"]
         gripper_position = self.env.robot.get_accurate_gripper_position()
-        self.set_variables(o1, gripper_position)    # save local positions of task_object and gripper to global positions
+        self.set_variables(o1, gripper_position)  # save local positions of task_object and gripper to global positions
         self.set_offset(x=-0.1, z=0.25)
         if self.x_obj > 0:
             if self.debug:
@@ -481,7 +500,7 @@ class SwitchReward(DistanceReward):
         a = self.calc_angle_reward()
 
         reward = - self.k_w * w - self.k_d * d + self.k_a * a
-        #self.task.check_distance_threshold(observation=observation)
+        # self.task.check_distance_threshold(observation=observation)
         self.task.check_goal()
         self.rewards_history.append(reward)
         if self.debug:
@@ -567,15 +586,15 @@ class SwitchReward(DistanceReward):
                 self.x_obj += x
                 self.y_obj += y
                 self.z_obj += z
-    
+
     def get_positions(self, observation):
         goal_position = observation["goal_state"]
         poker_position = observation["actual_state"]
-        #gripper_name = [x for x in self.env.task.obs_template["additional_obs"] if "endeff" in x][0]
-        #gripper_position = observation["additional_obs"]["endeff_xyz"]
-        #if self.prev_poker_position[0] is None:
+        # gripper_name = [x for x in self.env.task.obs_template["additional_obs"] if "endeff" in x][0]
+        # gripper_position = observation["additional_obs"]["endeff_xyz"]
+        # if self.prev_poker_position[0] is None:
         #    self.prev_poker_position = poker_position
-        return goal_position,poker_position,poker_position
+        return goal_position, poker_position, poker_position
 
     @staticmethod
     def calc_direction_2d(x1, y1, x2, y2, x3, y3):
@@ -663,7 +682,7 @@ class SwitchReward(DistanceReward):
         if self.task.task_type == "switch":
             return int(abs(angle))
         elif self.task.task_type == "press":
-            if abs(angle)>1.71:
+            if abs(angle) > 1.71:
                 print("Button pressed")
             return abs(angle)
         else:
@@ -698,11 +717,12 @@ class ButtonReward(SwitchReward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(ButtonReward, self).__init__(env, task)
-        self.k_w = 0.1   # coefficient for distance between actual position of robot's gripper and generated line
-        self.k_d = 0.1   # coefficient for absolute distance between gripper and end position
-        self.k_a = 1     # coefficient for calculated angle reward
+        self.k_w = 0.1  # coefficient for distance between actual position of robot's gripper and generated line
+        self.k_d = 0.1  # coefficient for absolute distance between gripper and end position
+        self.k_a = 1  # coefficient for calculated angle reward
 
     def compute(self, observation):
         """
@@ -737,7 +757,7 @@ class ButtonReward(SwitchReward):
                                         f" a:{a * self.k_a:.3f}",
                                         [1, 1, 1], textSize=2.0, lifeTime=0.05, textColorRGB=[0.6, 0.0, 0.6])
 
-        #self.task.check_distance_threshold(observation=observation)
+        # self.task.check_distance_threshold(observation=observation)
         self.task.check_goal()
         self.rewards_history.append(reward)
         return reward
@@ -758,7 +778,7 @@ class ButtonReward(SwitchReward):
         if norm == 0:
             return norm
         else:
-           return (vector * (1/norm))*len
+            return (vector * (1 / norm)) * len
 
     def abs_diff(self):
         """
@@ -771,11 +791,11 @@ class ButtonReward(SwitchReward):
         return abs_diff
 
     def calc_press_reward(self):
-        press = (self.get_angle() *100)
+        press = (self.get_angle() * 100)
         if self.prev_val is None:
             self.prev_val = press
         k = press // 2
-        reward = (k * press)/1000
+        reward = (k * press) / 1000
         if reward >= 14:
             reward += 2
         reward /= 10
@@ -784,6 +804,7 @@ class ButtonReward(SwitchReward):
         self.prev_val = press
         return reward
 
+
 class TurnReward(SwitchReward):
     """
     Reward class for reward signal calculation based on distance between 2 points (robot gripper and middle point of predefined line) and angle of handle
@@ -791,12 +812,13 @@ class TurnReward(SwitchReward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(TurnReward, self).__init__(env, task)
         self.r = 0.45
-        self.k_w = 0    # coefficient for distance between actual position of robot's gripper and generated line
-        self.k_d = 1    # coefficient for absolute distance between gripper and end position
-        self.k_a = 0    # coefficient for calculated angle reward
+        self.k_w = 0  # coefficient for distance between actual position of robot's gripper and generated line
+        self.k_d = 1  # coefficient for absolute distance between gripper and end position
+        self.k_a = 0  # coefficient for calculated angle reward
 
     def compute(self, observation):
         """
@@ -820,11 +842,10 @@ class TurnReward(SwitchReward):
             self.env.p.addUserDebugText(f"reward:{reward:.3f}, d:{d * self.k_d:.3f}, a: {a * self.k_a:.3f}",
                                         [1, 1, 1], textSize=2.0, lifeTime=0.05, textColorRGB=[0.6, 0.0, 0.6])
 
-        #self.task.check_distance_threshold(observation=observation)
+        # self.task.check_distance_threshold(observation=observation)
         self.task.check_goal()
         self.rewards_history.append(reward)
         return reward
-
 
     def set_offset(self, x=0.0, y=0.0, z=0.0):
         if self.offset is None:
@@ -855,7 +876,7 @@ class TurnReward(SwitchReward):
         Py = self.y_bot_curr_pos
         Pz = self.z_bot_curr_pos
 
-        l = coef - offset if change_reward  else coef + offset
+        l = coef - offset if change_reward else coef + offset
         l += normalize
         Ax = self.r * math.cos(alfa + l) + Sx
         Ay = self.r * math.sin(alfa + l) + Sy
@@ -863,8 +884,8 @@ class TurnReward(SwitchReward):
         Bx = k * math.cos(alfa + l) + Sx
         By = k * math.sin(alfa + l) + Sy
 
-        AB_mid_x = (k + (self.r - k)/2) * math.cos(alfa + l) + Sx
-        AB_mid_y = (k + (self.r - k)/2) * math.sin(alfa + l) + Sy
+        AB_mid_x = (k + (self.r - k) / 2) * math.cos(alfa + l) + Sx
+        AB_mid_y = (k + (self.r - k) / 2) * math.sin(alfa + l) + Sy
 
         P_MID_diff_x = AB_mid_x - Px
         P_MID_diff_y = AB_mid_y - Py
@@ -904,7 +925,7 @@ class TurnReward(SwitchReward):
         return reward
 
     def get_angle_between_vectors(self, v1, v2):
-        return math.acos(np.dot(v1, v2)/(self.count_vector_norm(v1)*self.count_vector_norm(v2)))
+        return math.acos(np.dot(v1, v2) / (self.count_vector_norm(v1) * self.count_vector_norm(v2)))
 
 
 class PokeReachReward(SwitchReward):
@@ -916,7 +937,7 @@ class PokeReachReward(SwitchReward):
         self.last_distance = None
         self.last_gripper_distance = None
         self.moved = False
-        self.prev_poker_position = [None]*3
+        self.prev_poker_position = [None] * 3
 
     def reset(self):
         """
@@ -925,7 +946,7 @@ class PokeReachReward(SwitchReward):
         self.last_distance = None
         self.last_gripper_distance = None
         self.moved = False
-        self.prev_poker_position = [None]*3
+        self.prev_poker_position = [None] * 3
 
     def compute(self, observation=None):
         poker_position, distance, gripper_distance = self.init(observation)
@@ -960,7 +981,7 @@ class PokeReachReward(SwitchReward):
         reward = 0
         if self.check_motion(poker_position):
             reward += self.last_gripper_distance - gripper_distance
-        reward += 100*(self.last_distance - distance)
+        reward += 100 * (self.last_distance - distance)
         return reward
 
     def initialize_positions(self, poker_position, distance, gripper_distance):
@@ -987,7 +1008,7 @@ class PokeReachReward(SwitchReward):
     def is_poker_moving(self, poker):
         if self.prev_poker_position[0] == poker[0] and self.prev_poker_position[1] == poker[1]:
             return False
-        elif self.env.episode_steps > 25:   # it slightly moves on the beginning
+        elif self.env.episode_steps > 25:  # it slightly moves on the beginning
             self.moved = True
         return True
 
@@ -1000,6 +1021,8 @@ class PokeReachReward(SwitchReward):
         elif self.is_poker_moving(poker):
             return False
         return True
+
+
 # dual rewards
 
 class DualPoke(PokeReachReward):
@@ -1010,9 +1033,10 @@ class DualPoke(PokeReachReward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(DualPoke, self).__init__(env, task)
-        self.prev_poker_position = [None]*3
+        self.prev_poker_position = [None] * 3
         self.touched = False
         self.last_aimer_dist = 0
         self.last_poker_dist = 0
@@ -1021,11 +1045,11 @@ class DualPoke(PokeReachReward):
         """
         Reset stored value of distance between 2 objects. Call this after the end of an episode.
         """
-        self.prev_poker_position = [None]*3
+        self.prev_poker_position = [None] * 3
         self.touched = False
         self.last_aimer_dist = 0
         self.last_poker_dist = 0
-        self.network_rewards = [0,0]
+        self.network_rewards = [0, 0]
         self.current_network = 0
 
     def is_poker_moving(self, poker):
@@ -1047,13 +1071,13 @@ class DualPoke(PokeReachReward):
         """
         self.network_switch_control(observation)
         reward = [self.aimer_compute(observation), self.poker_compute(observation)][self.current_network]
-        #self.task.check_distance_threshold(observation, threshold=0.05)
+        # self.task.check_distance_threshold(observation, threshold=0.05)
         self.task.check_goal()
         self.rewards_history.append(reward)
         return reward
 
     def aimer_compute(self, observation=None):
-        self.env.p.addUserDebugText("XXX", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText("XXX", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[0, 125, 0])
         goal_position, poker_position, gripper_position = self.get_positions(observation)
         aim_point = self.get_aim_point(goal_position, poker_position)
         aimer_dist = self.task.calc_distance(gripper_position, aim_point)
@@ -1061,7 +1085,8 @@ class DualPoke(PokeReachReward):
             self.last_aimer_dist = aimer_dist
         reward = self.last_aimer_dist - aimer_dist
         self.network_rewards[0] += reward
-        self.env.p.addUserDebugText(str(self.network_rewards[0]), [0.5,0.5,0.5], lifeTime=0.1, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText(str(self.network_rewards[0]), [0.5, 0.5, 0.5], lifeTime=0.1,
+                                    textColorRGB=[0, 125, 0])
         self.last_aimer_dist = aimer_dist
         if self.env.episode_steps > 25:
             self.touched = self.is_poker_moving(poker_position)
@@ -1069,20 +1094,21 @@ class DualPoke(PokeReachReward):
         return reward
 
     def poker_compute(self, observation=None):
-        self.env.p.addUserDebugText("XXX", [-0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText("XXX", [-0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[0, 0, 125])
         goal_position, poker_position, gripper_position = self.get_positions(observation)
         poker_dist = round(self.task.calc_distance(poker_position, goal_position), 5)
         if self.current_network != 1 or self.last_poker_dist is None:
             self.last_poker_dist = poker_dist
-        reward = 5*(self.last_poker_dist - poker_dist)
-        if self.task.check_object_moved(self.env.task_objects["actual_state"], 1): # if pushes goal too far
+        reward = 5 * (self.last_poker_dist - poker_dist)
+        if self.task.check_object_moved(self.env.task_objects["actual_state"], 1):  # if pushes goal too far
             self.env.episode_over = True
             self.env.episode_failed = True
             self.env.episode_info = "too strong poke"
             reward = -5
         self.network_rewards[1] += reward
 
-        self.env.p.addUserDebugText(str(self.network_rewards[1]), [-0.5,0.5,0.5], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText(str(self.network_rewards[1]), [-0.5, 0.5, 0.5], lifeTime=0.1,
+                                    textColorRGB=[0, 0, 125])
         self.last_poker_dist = poker_dist
         self.prev_poker_position = poker_position
         if self.touched and not self.is_poker_moving(observation["actual_state"]):
@@ -1107,13 +1133,13 @@ class DualPoke(PokeReachReward):
         gripper_position = observation["additional_obs"][gripper_name][:3]
         if self.prev_poker_position[0] is None:
             self.prev_poker_position = poker_position
-        return goal_position,poker_position,gripper_position
+        return goal_position, poker_position, gripper_position
 
     def decide(self, observation=None):
         goal_position, poker_position, gripper_position = self.get_positions(observation)
         is_aimed = self.is_aimed(goal_position, poker_position, gripper_position)
         if self.touched:
-            self.env.p.addUserDebugText("touched", [-0.3,0.3,0.3], lifeTime=0.1, textColorRGB=[0,0,125])
+            self.env.p.addUserDebugText("touched", [-0.3, 0.3, 0.3], lifeTime=0.1, textColorRGB=[0, 0, 125])
         if is_aimed or self.touched:
             owner = 1  # poke
         elif not is_aimed and not self.touched:
@@ -1121,7 +1147,8 @@ class DualPoke(PokeReachReward):
         return owner
 
     def did_touch(self):
-        contact_points = [self.env.p.getContactPoints(self.env.robot.robot_uid, self.env.env_objects[1].uid, x, -1) for x in range(0,self.env.robot.end_effector_index+1)]
+        contact_points = [self.env.p.getContactPoints(self.env.robot.robot_uid, self.env.env_objects[1].uid, x, -1) for
+                          x in range(0, self.env.robot.end_effector_index + 1)]
         for point in contact_points:
             if len(point) > 0:
                 return True
@@ -1130,16 +1157,16 @@ class DualPoke(PokeReachReward):
     def is_aimed(self, goal_position, poker_position, gripper_position):
         poke_vector = Vector(poker_position, goal_position, self.env.p)
         poke_vector.set_len(-0.2)
-        gripper_in_XY = poker_position + 3*poke_vector.vector
+        gripper_in_XY = poker_position + 3 * poke_vector.vector
         len = self.distance_of_point_from_abscissa(gripper_in_XY, poker_position, gripper_position)
         if len < 0.1:
             return True
         return False
 
     def triangle_height(self, a, b, c):
-        p = (a+b+c)/2
-        v = math.sqrt(p*(p-a)*(p-b)*(p-c))
-        return (2/a)*v
+        p = (a + b + c) / 2
+        v = math.sqrt(p * (p - a) * (p - b) * (p - c))
+        return (2 / a) * v
 
     def distance_of_point_from_abscissa(self, A, B, point):
         a = self.task.calc_distance(A, B)
@@ -1162,6 +1189,7 @@ class SingleStagePnP(DistanceReward):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(SingleStagePnP, self).__init__(env, task)
         self.before_pick = True
@@ -1207,6 +1235,7 @@ class SingleStagePnP(DistanceReward):
         self.prev_obj2_position = None
         self.before_pick = True
 
+
 class TwoStagePnP(DualPoke):
     """
     Pick and place with two rewarded stages - find and move, gripper is operated automatically.
@@ -1216,12 +1245,13 @@ class TwoStagePnP(DualPoke):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(TwoStagePnP, self).__init__(env, task)
         self.last_owner = None
-        self.last_find_dist  = None
-        self.last_lift_dist  = None
-        self.last_move_dist  = None
+        self.last_find_dist = None
+        self.last_lift_dist = None
+        self.last_move_dist = None
         self.last_place_dist = None
         self.current_network = 0
         self.num_networks = env.num_networks
@@ -1236,13 +1266,12 @@ class TwoStagePnP(DualPoke):
         Reset stored value of distance between 2 objects. Call this after the end of an episode.
         """
         self.last_owner = None
-        self.last_find_dist  = None
-        self.last_lift_dist  = None
-        self.last_move_dist  = None
+        self.last_find_dist = None
+        self.last_lift_dist = None
+        self.last_move_dist = None
         self.last_place_dist = None
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-
 
     def compute(self, observation=None):
         """
@@ -1254,8 +1283,10 @@ class TwoStagePnP(DualPoke):
         """
         owner = self.decide(observation)
         goal_position, object_position, gripper_position = self.get_positions(observation)
-        if owner   == 0: reward = self.find_compute(gripper_position, object_position)
-        elif owner == 1: reward = self.move_compute(object_position, goal_position)
+        if owner == 0:
+            reward = self.find_compute(gripper_position, object_position)
+        elif owner == 1:
+            reward = self.move_compute(object_position, goal_position)
         self.last_owner = owner
         self.task.check_goal()
         self.rewards_history.append(reward)
@@ -1264,12 +1295,12 @@ class TwoStagePnP(DualPoke):
     def decide(self, observation=None):
         goal_position, object_position, gripper_position = self.get_positions(observation)
         if self.gripper_reached_object(gripper_position, object_position):
-            self.current_network= 1
+            self.current_network = 1
         return self.current_network
 
     def gripper_reached_object(self, gripper, object):
-        #self.env.p.addUserDebugLine(gripper, object, lifeTime=0.1)
-        #if self.current_network == 0:
+        # self.env.p.addUserDebugLine(gripper, object, lifeTime=0.1)
+        # if self.current_network == 0:
         #    self.env.robot.magnetize_object(self.env.env_objects["actual_state"])
         if "gripper" in self.env.robot_action:
             if self.task.calc_distance(gripper, object) <= 0.05:
@@ -1284,40 +1315,42 @@ class TwoStagePnP(DualPoke):
                 return True
         return False
 
-
     def find_compute(self, gripper, object):
         # initial reach
-        self.env.p.addUserDebugText("find object", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,0,0])
+        self.env.p.addUserDebugText("Subgoal: Pick", [.65, 1., 0.5], lifeTime=0.1, textColorRGB=[125, 0, 0])
         dist = self.task.calc_distance(gripper, object)
         self.env.p.addUserDebugLine(gripper[:3], object[:3], lifeTime=0.1)
-        self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.5,0.5,0.7], lifeTime=0.1, textColorRGB=[0, 125, 0])
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.65, 1, 0.55], lifeTime=0.1,
+                                    textColorRGB=[0, 125, 0])
         if self.last_find_dist is None:
             self.last_find_dist = dist
         if self.last_owner != 0:
             self.last_find_dist = dist
         reward = self.last_find_dist - dist
-        self.env.p.addUserDebugText(f"Reward:{reward}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.65, 1, 0.65], lifeTime=0.1, textColorRGB=[0, 125, 0])
         self.last_find_dist = dist
         if self.task.check_object_moved(self.env.task_objects["actual_state"], threshold=1.2):
-            self.env.episode_over   = True
+            self.env.episode_over = True
             self.env.episode_failed = True
         self.network_rewards[0] += reward
-        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.7,0.7,1.1], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.65, 1, 0.7], lifeTime=0.1,
+                                    textColorRGB=[0, 0, 125])
         return reward
 
     def move_compute(self, object, goal):
         # reach of goal position + task object height in Z axis and release
-        self.env.p.addUserDebugText("move", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,125,0])
+        self.env.p.addUserDebugText("move", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[125, 125, 0])
         dist = self.task.calc_distance(object, goal)
         self.env.p.addUserDebugLine(object[:3], goal[:3], lifeTime=0.1)
-        self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.5,0.5,0.7], lifeTime=0.1, textColorRGB=[0, 125, 0])
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.5, 0.5, 0.7], lifeTime=0.1,
+                                    textColorRGB=[0, 125, 0])
         if self.last_place_dist is None:
             self.last_place_dist = dist
         if self.last_owner != 1:
             self.last_place_dist = dist
         reward = self.last_place_dist - dist
         reward = reward * 10
-        self.env.p.addUserDebugText(f"Reward:{reward}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.7, 0.7, 1.0], lifeTime=0.1, textColorRGB=[0, 125, 0])
         self.last_place_dist = dist
         if self.last_owner == 1 and dist < 0.1:
             self.env.robot.release_all_objects()
@@ -1329,8 +1362,10 @@ class TwoStagePnP(DualPoke):
             self.env.episode_over = True
         ix = 1 if self.num_networks > 1 else 0
         self.network_rewards[ix] += reward
-        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.7,0.7,1.1], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.65, 1, 0.7], lifeTime=0.1,
+                                    textColorRGB=[0, 0, 125])
         return reward
+
 
 class ThreeStagePnP(TwoStagePnP):
     """
@@ -1341,6 +1376,7 @@ class ThreeStagePnP(TwoStagePnP):
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(ThreeStagePnP, self).__init__(env, task)
         self.was_above = False
@@ -1363,8 +1399,9 @@ class ThreeStagePnP(TwoStagePnP):
         """
         owner = self.decide(observation)
         goal_position, object_position, gripper_position = self.get_positions(observation)
-        target = [[gripper_position,object_position], [object_position, goal_position], [object_position, goal_position]][owner]
-        reward = [self.find_compute,self.move_compute, self.place_compute][owner](*target)
+        target = \
+        [[gripper_position, object_position], [object_position, goal_position], [object_position, goal_position]][owner]
+        reward = [self.find_compute, self.move_compute, self.place_compute][owner](*target)
         self.last_owner = owner
         self.task.check_goal()
         self.rewards_history.append(reward)
@@ -1377,57 +1414,61 @@ class ThreeStagePnP(TwoStagePnP):
         if self.object_above_goal(object_position, goal_position) or self.was_above:
             self.current_network = 2
             self.was_above = True
-        self.env.p.addUserDebugText(f"Network:{self.current_network}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[55,125,0])
+        self.env.p.addUserDebugText(f"Network:{self.current_network}", [0.7, 0.7, 1.0], lifeTime=0.1,
+                                    textColorRGB=[55, 125, 0])
         return self.current_network
 
     def move_compute(self, object, goal):
         # moving object above goal position (forced 2D reach)
-        self.env.p.addUserDebugText("move", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText("Subgoal:move", [.65, 1., 0.5], lifeTime=0.1, textColorRGB=[0, 0, 125])
         object_XY = object[:3]
-        goal_XY   = [goal[0], goal[1], goal[2]+0.2]
+        goal_XY = [goal[0], goal[1], goal[2] + 0.2]
         self.env.p.addUserDebugLine(object_XY, goal_XY, lifeTime=0.1)
         dist = self.task.calc_distance(object_XY, goal_XY)
-        self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.5,0.5,0.7], lifeTime=0.1, textColorRGB=[0, 125, 0])
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.65, 1, 0.55], lifeTime=0.1,
+                                    textColorRGB=[0, 125, 0])
         if self.last_move_dist is None or self.last_owner != 1:
-           self.last_move_dist = dist
+            self.last_move_dist = dist
         reward = self.last_move_dist - dist
-        self.env.p.addUserDebugText(f"Reward:{reward}", [0.7,0.7,1.2], lifeTime=0.1, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.7, 0.7, 1.2], lifeTime=0.1, textColorRGB=[0, 125, 0])
         self.last_move_dist = dist
         ix = 1 if self.num_networks > 1 else 0
         self.network_rewards[ix] += reward
-        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.7,0.7,1.1], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.65, 1, 0.7], lifeTime=0.1,
+                                    textColorRGB=[0, 0, 125])
         return reward
-
 
     def place_compute(self, object, goal):
         # reach of goal position + task object height in Z axis and release
-        self.env.p.addUserDebugText("place", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,125,0])
+        self.env.p.addUserDebugText("Subgoal: place", [.65, 1., 0.5], lifeTime=0.1, textColorRGB=[125, 125, 0])
         self.env.p.addUserDebugLine(object[:3], goal[:3], lifeTime=0.1)
         dist = self.task.calc_distance(object, goal)
-        self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.5,0.5,0.7], lifeTime=0.1, textColorRGB=[0, 125, 0])
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.65, 1, 0.55], lifeTime=0.1,
+                                    textColorRGB=[0, 125, 0])
         if self.last_place_dist is None or self.last_owner != 2:
             self.last_place_dist = dist
         reward = self.last_place_dist - dist
         reward = reward * 10
-        self.env.p.addUserDebugText(f"Reward:{reward}", [0.7,0.7,1.2], lifeTime=0.1, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.7, 0.7, 1.2], lifeTime=0.1, textColorRGB=[0, 125, 0])
         self.last_place_dist = dist
-        
+
         if self.last_owner == 2 and dist < 0.1:
             self.env.robot.release_all_objects()
             self.gripped = None
             self.env.episode_info = "Object was placed to desired position"
-            #if self.task.number_tasks == self.task.current_task + 1:
+            # if self.task.number_tasks == self.task.current_task + 1:
             #    self.env.episode_over = True
         if self.env.episode_steps <= 2:
             self.env.episode_info = "Task finished in initial configuration"
             self.env.episode_over = True
         self.network_rewards[-1] += reward
-        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.7,0.7,1.1], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.65, 1, 0.7], lifeTime=0.1,
+                                    textColorRGB=[0, 0, 125])
         return reward
 
     def gripper_reached_object(self, gripper, object):
-        #self.env.p.addUserDebugLine(gripper, object, lifeTime=0.1)
-        #if self.current_network == 0:
+        # self.env.p.addUserDebugLine(gripper, object, lifeTime=0.1)
+        # if self.current_network == 0:
         #    self.env.robot.magnetize_object(self.env.env_objects["actual_state"])
         if "gripper" in self.env.robot_action:
             if self.task.calc_distance(gripper, object) <= 0.1:
@@ -1443,10 +1484,11 @@ class ThreeStagePnP(TwoStagePnP):
         return False
 
     def object_lifted(self, object, object_before_lift):
-        lifted_position = [object_before_lift[0], object_before_lift[1], object_before_lift[2]+0.1] # position of object before lifting but hightened with its height
+        lifted_position = [object_before_lift[0], object_before_lift[1], object_before_lift[
+            2] + 0.1]  # position of object before lifting but hightened with its height
         self.task.calc_distance(object, lifted_position)
         if object[2] < 0.079:
-            self.lifted = False # object has fallen
+            self.lifted = False  # object has fallen
             self.object_before_lift = object
         else:
             self.lifted = True
@@ -1454,12 +1496,13 @@ class ThreeStagePnP(TwoStagePnP):
         return False
 
     def object_above_goal(self, object, goal):
-        goal_XY   = [goal[0], goal[1], goal[2]+0.2]
+        goal_XY = [goal[0], goal[1], goal[2] + 0.2]
         object_XY = object
-        distance  = self.task.calc_distance(goal_XY, object_XY)
+        distance = self.task.calc_distance(goal_XY, object_XY)
         if distance < 0.1:
             return True
         return False
+
 
 class ThreeStagePnPRot(ThreeStagePnP):
 
@@ -1468,15 +1511,15 @@ class ThreeStagePnPRot(ThreeStagePnP):
         Reset stored value of distance between 2 objects. Call this after the end of an episode.
         """
         self.last_owner = None
-        self.last_find_dist  = None
-        self.last_lift_dist  = None
-        self.last_move_dist  = None
+        self.last_find_dist = None
+        self.last_lift_dist = None
+        self.last_move_dist = None
         self.last_place_dist = None
         self.last_rot_dist = None
         self.was_near = False
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-    
+
     def compute(self, observation=None):
         """
         Compute reward signal based on distance between 2 objects. The position of the objects must be present in observation.
@@ -1488,8 +1531,9 @@ class ThreeStagePnPRot(ThreeStagePnP):
         """
         owner = self.decide(observation)
         goal_position, object_position, gripper_position = self.get_positions(observation)
-        target = [[gripper_position,object_position], [object_position, goal_position], [object_position, goal_position]][owner]
-        reward = [self.find_compute,self.move_compute, self.rotate_compute][owner](*target)
+        target = \
+        [[gripper_position, object_position], [object_position, goal_position], [object_position, goal_position]][owner]
+        reward = [self.find_compute, self.move_compute, self.rotate_compute][owner](*target)
         self.last_owner = owner
         self.task.check_goal()
         self.rewards_history.append(reward)
@@ -1502,147 +1546,337 @@ class ThreeStagePnPRot(ThreeStagePnP):
         if self.object_near_goal(object_position, goal_position) or self.was_near:
             self.current_network = 2
             self.was_near = True
-        #self.env.p.addUserDebugText(f"Network:{self.current_network}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[55,125,0])
+        # self.env.p.addUserDebugText(f"Network:{self.current_network}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[55,125,0])
         return self.current_network
-    
+
     def find_compute(self, gripper, object):
         # initial reach
-        self.env.p.addUserDebugText("find object", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[125,0,0])
+        self.env.p.addUserDebugText("find object", [0.63, 1, 0.5], lifeTime=0.5, textColorRGB=[125, 0, 0])
         dist = self.task.calc_distance(gripper[:3], object[:3])
         self.env.p.addUserDebugLine(gripper[:3], object[:3], lifeTime=0.1)
-        self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.59,1,0.65], lifeTime=0.5, textColorRGB=[0, 125, 0])
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.65, 1, 0.55], lifeTime=0.5,
+                                    textColorRGB=[0, 125, 0])
         if self.last_find_dist is None:
             self.last_find_dist = dist
         if self.last_owner != 0:
             self.last_find_dist = dist
         reward = self.last_find_dist - dist
-        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61,1,0.55], lifeTime=0.5, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61, 1, 0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
         self.last_find_dist = dist
-        #if self.task.check_object_moved(self.env.task_objects["actual_state"], threshold=1.2):
+        # if self.task.check_object_moved(self.env.task_objects["actual_state"], threshold=1.2):
         #    self.env.episode_over   = True
         #    self.env.episode_failed = True
         self.network_rewards[0] += reward
-        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.59,1,0.6], lifeTime=0.5, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.65, 1, 0.7], lifeTime=0.5,
+                                    textColorRGB=[0, 0, 125])
         return reward
-    
+
     def move_compute(self, object, goal):
         # moving object above goal position (forced 2D reach)
-        self.env.p.addUserDebugText("move", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText("move", [0.63, 1, 0.5], lifeTime=0.5, textColorRGB=[0, 0, 125])
         object_XY = object[:3]
-        goal_XY   = goal[:3]
+        goal_XY = goal[:3]
         self.env.p.addUserDebugLine(object_XY, goal_XY, lifeTime=0.1)
         dist = self.task.calc_distance(object_XY, goal_XY)
-        self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.59,1,0.65], lifeTime=0.5, textColorRGB=[0, 125, 0])
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.65, 1, 0.55], lifeTime=0.5,
+                                    textColorRGB=[0, 125, 0])
         if self.last_move_dist is None or self.last_owner != 1:
-           self.last_move_dist = dist
+            self.last_move_dist = dist
         reward = self.last_move_dist - dist
-        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61,1,0.55], lifeTime=0.5, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61, 1, 0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
         self.last_move_dist = dist
         ix = 1 if self.num_networks > 1 else 0
         self.network_rewards[ix] += reward
-        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.59,1,0.6], lifeTime=0.5, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.65, 1, 0.7], lifeTime=0.5,
+                                    textColorRGB=[0, 0, 125])
         return reward
-    
-    
+
     def rotate_compute(self, object, goal):
         # reach of goal position + task object height in Z axis and release
-        self.env.p.addUserDebugText("rotate", [0.63,1,0.5], lifeTime=0.1, textColorRGB=[125,125,0])
+        self.env.p.addUserDebugText("rotate", [0.63, 1, 0.5], lifeTime=0.1, textColorRGB=[125, 125, 0])
         self.env.p.addUserDebugLine(object[:3], goal[:3], lifeTime=0.1)
         dist = self.task.calc_distance(object, goal)
-        self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.59,1,0.65], lifeTime=0.5, textColorRGB=[0, 125, 0])
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.65, 1, 0.55], lifeTime=0.5,
+                                    textColorRGB=[0, 125, 0])
         if self.last_place_dist is None or self.last_owner != 2:
             self.last_place_dist = dist
         reward = self.last_place_dist - dist
 
         rot = self.task.calc_rot_quat(object, goal)
-        self.env.p.addUserDebugText("Rotation: {}".format(round(rot,3)), [0.57,1,0.7], lifeTime=0.5, textColorRGB=[0, 222, 100])
+        self.env.p.addUserDebugText("Rotation: {}".format(round(rot, 3)), [0.65, 1, 0.6], lifeTime=0.5,
+                                    textColorRGB=[0, 222, 100])
         if self.last_rot_dist is None or self.last_owner != 2:
             self.last_rot_dist = rot
         rewardrot = self.last_rot_dist - rot
         reward = reward + rewardrot
 
-        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61,1,0.55], lifeTime=0.5, textColorRGB=[0,125,0])
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61, 1, 0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
         self.last_place_dist = dist
         self.last_rot_dist = rot
-        #if self.last_owner == 2 and dist < 0.1:
+        # if self.last_owner == 2 and dist < 0.1:
         #    self.env.robot.release_all_objects()
         #    self.gripped = None
         #    self.env.episode_info = "Object was placed to desired position"
         #    if self.task.number_tasks == self.task.current_task + 1:
         #        self.env.episode_over = True
-        #if self.env.episode_steps <= 2:
+        # if self.env.episode_steps <= 2:
         #    self.env.episode_info = "Task finished in initial configuration"
         #    self.env.episode_over = True
         self.network_rewards[-1] += reward
-        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.59,1,0.6], lifeTime=0.5, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.65, 1, 0.7], lifeTime=0.5,
+                                    textColorRGB=[0, 0, 125])
         return reward
 
     def object_near_goal(self, object, goal):
-        distance  = self.task.calc_distance(goal, object)
+        distance = self.task.calc_distance(goal, object)
         if distance < 0.1:
             return True
         return False
-    
+
+
+class ThreeStageSwipeRot(ThreeStagePnP):
+
+    def reset(self):
+        """
+        Reset stored value of distance between 2 objects. Call this after the end of an episode.
+        """
+        self.last_owner = None
+        self.last_find_dist = None
+        self.last_lift_dist = None
+        self.last_move_dist = None
+        self.last_place_dist = None
+        self.last_rot_dist = None
+        self.was_near = False
+        self.current_network = 0
+        self.network_rewards = [0] * self.num_networks
+
+    def subgoal_offset(self, goal_position):
+
+        offset = [0.2, 0.0, 0.0]
+        subgoal = [goal_position[0] - offset[0], goal_position[1] - offset[1], goal_position[2] - offset[2],
+                   goal_position[3], goal_position[4], goal_position[5], goal_position[6]]
+        return subgoal
+
+    def compute(self, observation=None):
+        """
+        Compute reward signal based on distance between 2 objects. The position of the objects must be present in observation.
+
+        Params:
+            :param observation: (list) Observation of the environment
+        Returns:
+            :return reward: (float) Reward signal for the environment
+        """
+        owner = self.decide(observation)
+        goal_position, object_position, gripper_position = self.get_positions(observation)
+        pregoal = self.subgoal_offset(goal_position)
+        target = [[gripper_position, object_position], [object_position, pregoal], [object_position, goal_position]][
+            owner]
+        reward = [self.find_compute, self.move_compute, self.rotate_compute][owner](*target)
+        self.last_owner = owner
+        self.task.check_goal()
+        self.rewards_history.append(reward)
+        return reward
+
+    def decide(self, observation=None):
+        goal_position, object_position, gripper_position = self.get_positions(observation)
+        pregoal = self.subgoal_offset(goal_position)
+        if self.gripper_reached_object(gripper_position, object_position):
+            self.current_network = 1
+        if self.object_ready_swipe(object_position, pregoal) or self.was_near:
+            self.current_network = 2
+            self.was_near = True
+        # self.env.p.addUserDebugText(f"Network:{self.current_network}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[55,125,0])
+        return self.current_network
+
+    def find_compute(self, gripper, object):
+        # initial reach
+        self.env.p.addUserDebugText("find sponge", [0.63, 1, 0.5], lifeTime=0.5, textColorRGB=[125, 0, 0])
+        dist = self.task.calc_distance(gripper[:3], object[:3])
+        self.env.p.addUserDebugLine(gripper[:3], object[:3], lifeTime=0.1)
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.59, 1, 0.65], lifeTime=0.5,
+                                    textColorRGB=[0, 125, 0])
+        if self.last_find_dist is None:
+            self.last_find_dist = dist
+        if self.last_owner != 0:
+            self.last_find_dist = dist
+        reward = self.last_find_dist - dist
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61, 1, 0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
+        self.last_find_dist = dist
+        # if self.task.check_object_moved(self.env.task_objects["actual_state"], threshold=1.2):
+        #    self.env.episode_over   = True
+        #    self.env.episode_failed = True
+        self.network_rewards[0] += reward
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.59, 1, 0.6], lifeTime=0.5,
+                                    textColorRGB=[0, 0, 125])
+        return reward
+
+    def move_compute(self, object, pregoal):
+        # moving object above goal position (forced 2D reach)
+        self.env.p.addUserDebugText("prepare swipe", [0.63, 1, 0.5], lifeTime=0.5, textColorRGB=[0, 0, 125])
+        self.env.p.addUserDebugLine(object[:3], pregoal[:3], lifeTime=0.1)
+
+        dist = self.task.calc_distance(object, pregoal)
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.59, 1, 0.65], lifeTime=0.5,
+                                    textColorRGB=[0, 125, 0])
+        if self.last_place_dist is None or self.last_owner != 1:
+            self.last_place_dist = dist
+        reward = self.last_place_dist - dist
+
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61, 1, 0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
+        self.last_place_dist = dist
+        ix = 1 if self.num_networks > 1 else 0
+        self.network_rewards[ix] += reward
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.65, 1, 0.7], lifeTime=0.5,
+                                    textColorRGB=[0, 0, 125])
+        return reward
+
+    def rotate_compute(self, object, goal):
+        # reach of goal position + task object height in Z axis and release
+        self.env.p.addUserDebugText("swiping", [0.63, 1, 0.5], lifeTime=0.1, textColorRGB=[125, 125, 0])
+        self.env.p.addUserDebugLine(object[:3], goal[:3], lifeTime=0.1)
+
+        dist = self.task.calc_distance(object, goal)
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.59, 1, 0.65], lifeTime=0.5,
+                                    textColorRGB=[0, 125, 0])
+        if self.last_place_dist is None or self.last_owner != 2:
+            self.last_place_dist = dist
+        rewarddist = self.last_place_dist - dist
+
+        rot = self.task.calc_rot_quat(object, goal)
+        self.env.p.addUserDebugText("Rotation: {}".format(round(rot, 3)), [0.57, 1, 0.7], lifeTime=0.5,
+                                    textColorRGB=[0, 222, 100])
+        if self.last_rot_dist is None or self.last_owner != 2:
+            self.last_rot_dist = rot
+        rewardrot = self.last_rot_dist - rot
+
+        z_difference = self.task.calc_height_diff(object, goal)
+        self.env.p.addUserDebugText("Heightdiff: {}".format(round(z_difference, 3)), [0.55, 1, 0.73], lifeTime=0.5,
+                                    textColorRGB=[45, 222, 100])
+        rewardheight = 0.05 - z_difference
+        reward = rewarddist + rewardrot + rewardheight
+
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61, 1, 0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
+        self.last_place_dist = dist
+        self.last_rot_dist = rot
+        # if self.last_owner == 2 and dist < 0.1:
+        #    self.env.robot.release_all_objects()
+        #    self.gripped = None
+        #    self.env.episode_info = "Object was placed to desired position"
+        #    if self.task.number_tasks == self.task.current_task + 1:
+        #        self.env.episode_over = True
+        # if self.env.episode_steps <= 2:
+        #    self.env.episode_info = "Task finished in initial configuration"
+        #    self.env.episode_over = True
+        self.network_rewards[2] += reward
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.65, 1, 0.7], lifeTime=0.5,
+                                    textColorRGB=[0, 0, 125])
+        return reward
+
+    def object_ready_swipe(self, object, goal):
+        distance = self.task.calc_distance(goal[:3], object[:3])
+        if distance < 0.1:
+            return True
+        return False
+
+
+class ThreeStageSwipe(ThreeStageSwipeRot):
+
+    def object_ready_swipe(self, object, goal):
+        distance = self.task.calc_distance(goal[:3], object[:3])
+        rot = self.task.calc_rot_quat(object, goal)
+        if distance < 0.1 and rot < 0.1:
+            return True
+        return False
+
+    def move_compute(self, object, pregoal):
+        # moving object above goal position (forced 2D reach)
+        self.env.p.addUserDebugText("prepare swipe", [0.63, 1, 0.5], lifeTime=0.5, textColorRGB=[0, 0, 125])
+        self.env.p.addUserDebugLine(object[:3], pregoal[:3], lifeTime=0.1)
+
+        dist = self.task.calc_distance(object, pregoal)
+        self.env.p.addUserDebugText("Distance: {}".format(round(dist, 3)), [0.59, 1, 0.65], lifeTime=0.5,
+                                    textColorRGB=[0, 125, 0])
+        if self.last_place_dist is None or self.last_owner != 1:
+            self.last_place_dist = dist
+        reward = self.last_place_dist - dist
+
+        rot = self.task.calc_rot_quat(object, pregoal)
+        self.env.p.addUserDebugText("Rotation: {}".format(round(rot, 3)), [0.57, 1, 0.7], lifeTime=0.5,
+                                    textColorRGB=[0, 222, 100])
+        if self.last_rot_dist is None or self.last_owner != 1:
+            self.last_rot_dist = rot
+        rewardrot = self.last_rot_dist - rot
+
+        reward = reward + rewardrot
+
+        self.env.p.addUserDebugText(f"Reward:{reward}", [0.61, 1, 0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
+        self.last_place_dist = dist
+        self.last_rot_dist = rot
+        ix = 1 if self.num_networks > 1 else 0
+        self.network_rewards[ix] += reward
+        self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.59, 1, 0.6], lifeTime=0.5,
+                                    textColorRGB=[0, 0, 125])
+        return reward
+
 
 class FourStagePnP(ThreeStagePnP):
 
     def check_num_networks(self):
         assert self.num_networks <= 4, "ThreeStagePnP reward can work with maximum 3 networks"
-    
+
     def above_compute(self, object, goal):
         # moving object above goal position (forced 2D reach)
-        self.env.p.addUserDebugText("move", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText("move", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[0, 0, 125])
         object_XY = object
-        goal_XY   = [goal[0], goal[1], goal[2]+0.2]
+        goal_XY = [goal[0], goal[1], goal[2] + 0.2]
         self.env.p.addUserDebugLine(object_XY, goal_XY, lifeTime=0.1)
         dist = self.task.calc_distance(object_XY, goal_XY)
-        if self.last_move_dist is None: #or self.last_owner != 1:
-           self.last_move_dist = dist
+        if self.last_move_dist is None:  # or self.last_owner != 1:
+            self.last_move_dist = dist
         reward = self.last_move_dist - dist
         self.last_move_dist = dist
-        #ix = 1 if self.num_networks > 1 else 0
+        # ix = 1 if self.num_networks > 1 else 0
         self.network_rewards[0] += reward
         return reward
 
     def find_compute(self, gripper, object):
         # initial reach
-        self.env.p.addUserDebugText("find object", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,0,0])
+        self.env.p.addUserDebugText("find object", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[125, 0, 0])
         dist = self.task.calc_distance(gripper, object)
         self.env.p.addUserDebugLine(gripper, object, lifeTime=0.1)
         if self.last_find_dist is None:
             self.last_find_dist = dist
-        #if self.last_owner != 0:
+        # if self.last_owner != 0:
         #    self.last_find_dist = dist
         reward = self.last_find_dist - dist
         self.last_find_dist = dist
         if self.task.check_object_moved(self.env.task_objects["actual_state"], threshold=1.2):
-            self.env.episode_over   = True
+            self.env.episode_over = True
             self.env.episode_failed = True
         self.network_rewards[1] += reward
         return reward
-    
+
     def move_compute(self, object, goal):
         # moving object above goal position (forced 2D reach)
-        self.env.p.addUserDebugText("move", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[0,0,125])
+        self.env.p.addUserDebugText("move", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[0, 0, 125])
         object_XY = object
-        goal_XY   = [goal[0], goal[1], goal[2]+0.2]
+        goal_XY = [goal[0], goal[1], goal[2] + 0.2]
         self.env.p.addUserDebugLine(object_XY, goal_XY, lifeTime=0.1)
         dist = self.task.calc_distance(object_XY, goal_XY)
-        if self.last_move_dist is None: #or self.last_owner != 1:
-           self.last_move_dist = dist
+        if self.last_move_dist is None:  # or self.last_owner != 1:
+            self.last_move_dist = dist
         reward = self.last_move_dist - dist
         self.last_move_dist = dist
-        #ix = 1 if self.num_networks > 1 else 0
+        # ix = 1 if self.num_networks > 1 else 0
         self.network_rewards[2] += reward
         return reward
 
-
     def place_compute(self, object, goal):
         # reach of goal position + task object height in Z axis and release
-        self.env.p.addUserDebugText("place", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,125,0])
+        self.env.p.addUserDebugText("place", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[125, 125, 0])
         self.env.p.addUserDebugLine(object, goal, lifeTime=0.1)
         dist = self.task.calc_distance(object, goal)
-        if self.last_place_dist is None: # or self.last_owner != 2:
+        if self.last_place_dist is None:  # or self.last_owner != 2:
             self.last_place_dist = dist
         reward = self.last_place_dist - dist
         reward = reward * 10
@@ -1668,8 +1902,10 @@ class FourStagePnP(ThreeStagePnP):
         """
         owner = self.decide(observation)
         goal_position, object_position, gripper_position = self.get_positions(observation)
-        target = [[gripper_position,object_position],[gripper_position,object_position], [object_position, goal_position], [object_position, goal_position]][owner]
-        reward = [self.above_compute,self.find_compute,self.move_compute, self.place_compute][owner](*target)
+        target = \
+        [[gripper_position, object_position], [gripper_position, object_position], [object_position, goal_position],
+         [object_position, goal_position]][owner]
+        reward = [self.above_compute, self.find_compute, self.move_compute, self.place_compute][owner](*target)
         self.last_owner = owner
         self.task.check_goal()
         self.rewards_history.append(reward)
@@ -1686,11 +1922,12 @@ class FourStagePnP(ThreeStagePnP):
             self.was_above = True
         return self.current_network
 
+
 class TwoStagePnPBgrip(TwoStagePnP):
 
     def gripper_reached_object(self, gripper, object):
         self.env.p.addUserDebugLine(gripper, object, lifeTime=0.1)
-        #if self.current_network == 0:
+        # if self.current_network == 0:
         #    self.env.robot.magnetize_object(self.env.env_objects["actual_state"])
         if "gripper" in self.env.robot_action:
             if self.task.calc_distance(gripper, object) <= 0.08:
@@ -1714,34 +1951,35 @@ class GripperPickAndPlace():
         :param env: (object) Environment, where the training takes place
         :param task: (object) Task that is being trained, instance of a class TaskModule
     """
+
     def __init__(self, env, task):
         super(GripperPickAndPlace, self).__init__(env, task)
-        self.prev_object_position = [None]*3
-        self.current_network  = 0
+        self.prev_object_position = [None] * 3
+        self.current_network = 0
         self.picked = False
-        self.moved  = False
-        self.last_pick_dist  = None
-        self.last_move_dist  = None
+        self.moved = False
+        self.last_pick_dist = None
+        self.last_move_dist = None
         self.last_place_dist = None
-        self.network_rewards = [0,0,0]
+        self.network_rewards = [0, 0, 0]
         self.gripper_name = [x for x in self.env.task.obs_template["additional_obs"] if "endeff" in x][0]
 
     def reset(self):
-        self.prev_object_position = [None]*3
-        self.current_network  = 0
+        self.prev_object_position = [None] * 3
+        self.current_network = 0
         self.picked = False
-        self.moved  = False
-        self.last_pick_dist  = None
-        self.last_move_dist  = None
+        self.moved = False
+        self.last_pick_dist = None
+        self.last_move_dist = None
         self.last_place_dist = None
-        self.network_rewards = [0,0,0]
+        self.network_rewards = [0, 0, 0]
 
     def compute(self, observation=None):
         owner = self.decide(observation)
         goal_position, object_position, gripper_position = self.get_positions(observation)
-        reward = [self.pick(gripper_position, object_position),self.move(goal_position, object_position),
+        reward = [self.pick(gripper_position, object_position), self.move(goal_position, object_position),
                   self.place(goal_position, object_position)][owner]
-        self.task.check_distance_threshold(observation,threshold=0.05)
+        self.task.check_distance_threshold(observation, threshold=0.05)
         self.rewards_history.append(reward)
         return reward
 
@@ -1754,7 +1992,7 @@ class GripperPickAndPlace():
         return self.current_network
 
     def pick(self, gripper, object):
-        self.env.p.addUserDebugText("pick", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,0,0])
+        self.env.p.addUserDebugText("pick", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[125, 0, 0])
         dist = self.task.calc_distance(gripper, object)
         if self.last_pick_dist is None:
             self.last_pick_dist = dist
@@ -1763,17 +2001,17 @@ class GripperPickAndPlace():
         self.last_pick_dist = dist
 
         if self.task.check_object_moved(self.env.task_objects["actual_state"], threshold=1):
-            self.env.episode_over   = True
+            self.env.episode_over = True
             self.env.episode_failed = True
 
         if dist < 0.1 and self.env.robot.gripper_active:
             self.picked = True
             reward += 1
-        self.network_rewards[0]  += reward
+        self.network_rewards[0] += reward
         return reward
 
     def move(self, goal, object):
-        self.env.p.addUserDebugText("move", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,125,0])
+        self.env.p.addUserDebugText("move", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[125, 125, 0])
         dist = self.task.calc_distance(object, goal)
         if self.last_move_dist is None:
             self.last_move_dist = dist
@@ -1790,10 +2028,10 @@ class GripperPickAndPlace():
         return reward
 
     def place(self, goal, object):
-        self.env.p.addUserDebugText("place", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[0,125,125])
+        self.env.p.addUserDebugText("place", [0.7, 0.7, 0.7], lifeTime=0.1, textColorRGB=[0, 125, 125])
         dist = self.task.calc_distance(object, goal)
 
-        self.env.p.addUserDebugText("distance " + str(dist), [0.5,0.5,0.5], lifeTime=0.1, textColorRGB=[0,125,125])
+        self.env.p.addUserDebugText("distance " + str(dist), [0.5, 0.5, 0.5], lifeTime=0.1, textColorRGB=[0, 125, 125])
         if self.last_place_dist is None:
             self.last_place_dist = dist
 
@@ -1812,7 +2050,7 @@ class GripperPickAndPlace():
             self.env.episode_over = True
         elif dist > 0.1:
             self.picked = False
-            self.moved  = False
+            self.moved = False
             reward -= 1
 
         self.network_rewards[2] += reward
