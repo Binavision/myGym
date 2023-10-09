@@ -11,7 +11,7 @@ from myGym.envs.env_object import EnvObject
 from myGym.envs.rewards import *
 import numpy as np
 from itertools import chain
-from gym import spaces
+from gymnasium import spaces
 import random
 
 from myGym.utils.helpers import get_workspace_dict
