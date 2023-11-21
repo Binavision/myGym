@@ -10,34 +10,7 @@ import json, commentjson
 import gym
 from myGym import envs
 import myGym.utils.cfg_comparator as cfg
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-from stable_baselines.common.policies import MlpPolicy
-from stable_baselines.common import make_vec_env
-from stable_baselines.common.vec_env import DummyVecEnv
-from stable_baselines.bench import Monitor
-from stable_baselines import results_plotter
-from stable_baselines.her import GoalSelectionStrategy, HERGoalEnvWrapper
-# For now I am importing both with slightly modified names P-PyTorch T-TensorFlow
-from stable_baselines import PPO1 as PPO1_T, PPO2 as PPO2_T, HER as HER_T, SAC as SAC_T, DDPG as DDPG_T
-from stable_baselines import TD3 as TD3_T, A2C as A2C_T, ACKTR as ACKTR_T, TRPO as TRPO_T, GAIL as GAIL_T
-try:
-    from stable_baselines3 import PPO as PPO_P, A2C as A2C_P, SAC as SAC_P, TD3 as TD3_P
-except:
-    print("Torch isn't probably installed correctly")
-
-from myGym.stable_baselines_mygym.algo import MyAlgo
-from myGym.stable_baselines_mygym.reference import REFER
-from myGym.stable_baselines_mygym.multi_ppo2 import MultiPPO2
-from myGym.stable_baselines_mygym.multi_acktr import MultiACKTR
-from myGym.stable_baselines_mygym.policies import MyMlpPolicy
-from myGym.stable_baselines_mygym.TorchPPO import TorchPPO
-from myGym.stable_baselines_mygym.TorchPPOpolicies import TorchMlpPolicy
-
-
-from stable_baselines.gail import ExpertDataset, generate_expert_traj
-from stable_baselines.sac.policies import MlpPolicy as MlpPolicySAC
-from stable_baselines.ddpg.policies import MlpPolicy as MlpPolicyDDPG
-from stable_baselines.td3.policies import MlpPolicy as MlpPolicyTD3
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Import helper classes and functions for monitoring
 from myGym.utils.callbacks import ProgressBarManager, SaveOnBestTrainingRewardCallback,  PlottingCallback, CustomEvalCallback
@@ -77,7 +50,7 @@ def save_results(arg_dict, model_name, env, model_logdir=None, show=False):
 def configure_env(arg_dict, model_logdir=None, for_train=True):
     env_arguments = {"render_on": True, "visualize": arg_dict["visualize"], "workspace": arg_dict["workspace"],
                      "robot": arg_dict["robot"], "robot_init_joint_poses": arg_dict["robot_init"],
-                     "robot_action": arg_dict["robot_action"],"max_velocity": arg_dict["max_velocity"], 
+                     "robot_action": arg_dict["robot_action"],"max_velocity": arg_dict["max_velocity"],
                      "max_force": arg_dict["max_force"],"task_type": arg_dict["task_type"],
                      "action_repeat": arg_dict["action_repeat"],
                      "task_objects":arg_dict["task_objects"], "observation":arg_dict["observation"], "distractors":arg_dict["distractors"],
@@ -189,7 +162,7 @@ def train(env, implemented_combos, model_logdir, arg_dict, pretrained_model=None
         eval_callback = CustomEvalCallback(eval_env, log_path=model_logdir,
                                            eval_freq=arg_dict["eval_freq"],
                                            algo_steps=arg_dict["algo_steps"],
-                                           n_eval_episodes=arg_dict["eval_episodes"],                                           
+                                           n_eval_episodes=arg_dict["eval_episodes"],
                                            record=arg_dict["record"],
                                            camera_id=arg_dict["camera"])
         callbacks_list.append(eval_callback)

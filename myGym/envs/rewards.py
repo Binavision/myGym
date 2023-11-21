@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from stable_baselines import results_plotter
+from myGym.stable_baselines_mygym import results_plotter
 import os
 import math
 from math import sqrt, fabs, exp, pi, asin
@@ -473,7 +473,7 @@ class SwitchReward(DistanceReward):
 
         points   =  [(self.x_obj+0.2, self.y_obj, self.z_obj+0.2),
                     (self.x_obj-0.2, self.y_obj, self.z_obj+0.2)]
-        
+
         cur_pos  =  (self.x_bot_curr_pos, self.y_bot_curr_pos, self.z_bot_curr_pos)
         last_pos =  (self.x_bot_last_pos, self.y_bot_last_pos, self.z_bot_last_pos)
 
@@ -481,7 +481,7 @@ class SwitchReward(DistanceReward):
 
         distances=  [self.get_distance(points[0], cur_pos), self.get_distance(points[1], cur_pos),
                      self.get_distance(goal_pos, cur_pos), self.get_distance_line_point(points[0], points[1], cur_pos)]
-        
+
         last_dist=  [self.get_distance(points[0], last_pos), self.get_distance(points[1], last_pos),
                      self.get_distance(goal_pos, last_pos), self.get_distance_line_point(points[0], points[1], last_pos)]
 
@@ -490,11 +490,11 @@ class SwitchReward(DistanceReward):
         rew_2point  =   0
 
         if not self.reach_line:
-            rew_1point = self.lin_eval(distances[0]) if distances[0] < last_dist[0] else -1/self.lin_eval(distances[0]) 
+            rew_1point = self.lin_eval(distances[0]) if distances[0] < last_dist[0] else -1/self.lin_eval(distances[0])
             if distances[1] <= self.dist_offset:
                 self.reach_line = True
         else:
-            rew_line    =   self.lin_eval(distances[3]) if distances[3] < last_dist[3] else -1/self.lin_eval(distances[3]) 
+            rew_line    =   self.lin_eval(distances[3]) if distances[3] < last_dist[3] else -1/self.lin_eval(distances[3])
             rew_2point  =   self.lin_eval(distances[1]) if distances[1] < last_dist[1] else -1/self.lin_eval(distances[1])
             # if distances[3] < self.dist_offset:
             #     rew_line += self.norm_eval_4_line(points[0], points[1], cur_pos)
@@ -511,7 +511,7 @@ class SwitchReward(DistanceReward):
         self.task.check_goal()
         self.rewards_history.append(reward)
         self.set_last_pos()
-        return reward 
+        return reward
 
     def normap_dist_func(self, x: float, variance_sqrt = 0.2) -> float:
         return (1/(variance_sqrt*sqrt(2*pi)))*exp((-0.5)*((x/variance_sqrt)**2))
@@ -587,8 +587,8 @@ class SwitchReward(DistanceReward):
     def set_last_pos(self):
         """set last robot possition"""
         self.x_bot_last_pos = self.x_bot_curr_pos
-        self.y_bot_last_pos = self.y_bot_curr_pos 
-        self.z_bot_last_pos = self.z_bot_curr_pos 
+        self.y_bot_last_pos = self.y_bot_curr_pos
+        self.z_bot_last_pos = self.z_bot_curr_pos
 
     def set_variables(self, o1, o2):
         """
@@ -660,9 +660,9 @@ class SwitchReward(DistanceReward):
             reward = max_r
         else:
             b = max_r + self.dist_offset
-            reward = b - dist 
+            reward = b - dist
         return reward
-    
+
 
     # @staticmethod
     def exp_eval(self, dist : float, max_r: float = 1) -> float:
@@ -671,7 +671,7 @@ class SwitchReward(DistanceReward):
         if dist <= self.dist_offset:
             reward = max_r
         else:
-            reward = exp(self.dist_offset - dist) + (max_r - 1) 
+            reward = exp(self.dist_offset - dist) + (max_r - 1)
         return reward
 
 
@@ -685,7 +685,7 @@ class SwitchReward(DistanceReward):
         b = np.array(point2)
         if (a == None).any() or (b == None).any():
             return float('inf')
-        return sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2 + (point1[2]-point2[2])**2) 
+        return sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2 + (point1[2]-point2[2])**2)
 
 
     @staticmethod
@@ -697,7 +697,7 @@ class SwitchReward(DistanceReward):
         dir_vector = np.array( [lpoint2[0]-lpoint1[0],
                                 lpoint2[1]-lpoint1[1],
                                 lpoint2[2]-lpoint1[2]] )
-        
+
         plp1_vector = np.array( [lpoint1[0]-point[0],
                                 lpoint1[1]-point[1],
                                 lpoint1[2]-point[2]] )
@@ -974,7 +974,7 @@ class TurnReward(SwitchReward):
 
         points   =  [(self.x_obj+0.3, self.y_obj-0.2, self.z_obj+0.1),
                     (self.x_obj-0.4, self.y_obj-0.2, self.z_obj+0.1)]
-        
+
         cur_pos  =  (self.x_bot_curr_pos, self.y_bot_curr_pos, self.z_bot_curr_pos)
         last_pos =  (self.x_bot_last_pos, self.y_bot_last_pos, self.z_bot_last_pos)
 
@@ -982,7 +982,7 @@ class TurnReward(SwitchReward):
 
         distances =  [self.get_distance(points[0], cur_pos), self.get_distance(points[1], cur_pos),
                      self.get_distance(goal_pos, cur_pos), self.get_distance_line_point(points[0], points[1], cur_pos)]
-        
+
         last_dist =  [self.get_distance(points[0], last_pos), self.get_distance(points[1], last_pos),
                      self.get_distance(goal_pos, last_pos), self.get_distance_line_point(points[0], points[1], last_pos)]
 
@@ -1000,11 +1000,11 @@ class TurnReward(SwitchReward):
         rew_2point  =   0
 
         if not self.reach_line:
-            rew_1point = self.lin_hyp_eval(distances[0], max_r = rewards["max_1point"], default = rewards["min_1point"]) if distances[0] < last_dist[0] else -1.5*self.lin_hyp_eval(distances[0], max_r = rewards["max_1point"], default = rewards["min_1point"]) 
+            rew_1point = self.lin_hyp_eval(distances[0], max_r = rewards["max_1point"], default = rewards["min_1point"]) if distances[0] < last_dist[0] else -1.5*self.lin_hyp_eval(distances[0], max_r = rewards["max_1point"], default = rewards["min_1point"])
             if distances[3] <= self.dist_offset:
                 self.reach_line = True
         else:
-            rew_line    =   self.lin_hyp_eval(distances[3], max_r = rewards["max_line"], default = rewards["min_line"]) if distances[3] < last_dist[3] else -1.5*self.lin_hyp_eval(distances[3], max_r = rewards["max_line"], default = rewards["min_line"]) 
+            rew_line    =   self.lin_hyp_eval(distances[3], max_r = rewards["max_line"], default = rewards["min_line"]) if distances[3] < last_dist[3] else -1.5*self.lin_hyp_eval(distances[3], max_r = rewards["max_line"], default = rewards["min_line"])
             rew_2point  =   self.lin_hyp_eval(distances[1], max_r = rewards["max_2point"], default = rewards["min_2point"]) if distances[1] < last_dist[1] else -1.5*self.lin_hyp_eval(distances[1], max_r = rewards["max_2point"], default = rewards["min_2point"])
 
         angle_rew = self.get_angle_reward()
@@ -1060,12 +1060,12 @@ class TurnReward(SwitchReward):
     def lin_hyp_eval(self, dist: float, max_r: float = 1., default: float = 0.) -> float:
         reward = [-dist+max_r, ((0.5*max_r)**2)/dist][int(dist > 0.5*max_r)]
         return reward + default
-  
-  
+
+
     def hyperb_reward(self, dist: float, a: float = 0.1, maxR: float = float("inf"), minR: float =  0.) -> float:
         assert maxR > minR, "maxR must be higher then minR"
         return np.median([maxR, a/dist, minR])
-    
+
 
     def lin_penalty(self, dist: float, k: float = 1., maxP: float = -float('inf'), minP: float = 0.) -> float:
         assert maxP < minP, "maxP must be less then minP"
@@ -1160,13 +1160,13 @@ class PokeReachReward(SwitchReward):
         self.cube_offest               = 0.1
         self.dist_offset               = 0.05
 
-        self.last_points               = None 
+        self.last_points               = None
         self.point_was_reached         = False
 
     def reset(self):
         self.last_points               = None
         self.point_was_reached         = False
-    
+
     def compute(self, observation=None):
         goal_pos, cube_pos, gripper = self.set_points(observation)
         cube_last_pos, gripper_last = self.last_points if self.last_points != None else [cube_pos, gripper]
@@ -1186,7 +1186,7 @@ class PokeReachReward(SwitchReward):
         rew_point = self.exp_eval(cur_dist) if cur_dist < last_dist else self.lin_penalty(last_dist, min_penalty = 1)
         rew_angle = self.get_angle_reward_2D(goal_pos,cube_last_pos, cube_pos)
 
-        reward = rew_point + rew_angle 
+        reward = rew_point + rew_angle
         self.env.p.addUserDebugText(f"{rew_point}, {rew_angle}", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[1,0,0])
         self.set_last_positions(cube_pos, gripper)
         self.rewards_history.append(reward)
@@ -1285,10 +1285,10 @@ class PokeReachReward(SwitchReward):
         elif self.is_poker_moving(poker):
             return False
         return True
-    
+
     def set_points(self, observation) -> tuple:
         return np.array(observation["goal_state"]), np.array(observation["actual_state"]), np.array(observation["additional_obs"]["endeff_xyz"])
-    
+
     def lin_penalty(self, dist: float, min_penalty: float = 0, k: float = 1) -> float:
         return -dist*fabs(k) - fabs(min_penalty)
 
@@ -1296,10 +1296,10 @@ class PokeReachReward(SwitchReward):
         dir_unit_vctor = (point2-point1) / np.linalg.norm(point2-point1)
         point3 = dir_unit_vctor*self.cube_offest + point2
         return point3
-    
+
     def set_last_positions(self, cube: 'numpy.ndarray', gripper: 'numpy.ndarray'):
         self.last_points = [cube, gripper]
-    
+
     @staticmethod
     def get_unit_vector(tail: 'numpy.ndarray', head: 'numpy.ndarray') -> 'numpy.ndarray':
         vector = head - tail
@@ -1319,7 +1319,7 @@ class PokeReachReward(SwitchReward):
         vecU2 = self.get_unit_vector(tail[:-1], head2[:-1])
         if not self.is_moved_2D(tail, head2):
             return 0
-        angle = fabs(self.get_angle_2vec(vecU1, vecU2)) 
+        angle = fabs(self.get_angle_2vec(vecU1, vecU2))
         return [-angle, 200/angle][int(angle > 20)]
 
 class PushReward2(PokeReachReward):
@@ -1330,7 +1330,7 @@ class PushReward2(PokeReachReward):
         self.cube_offest               = 0.1
         self.dist_offset               = 0.05
 
-        self.last_points               = None 
+        self.last_points               = None
         self.point_was_reached         = False
 
         self.x_cube = None
@@ -1343,7 +1343,7 @@ class PushReward2(PokeReachReward):
 
         self.x_target = None
         self.y_target = None
-        self.z_target = None 
+        self.z_target = None
 
         self.k_p = 1   # distance coefficient between cube position and gripper position
         self.k_ct = 2   # distance coefficient between cube position and target position
@@ -1357,7 +1357,7 @@ class PushReward2(PokeReachReward):
     def reset(self):
         self.last_points               = None
         self.point_was_reached         = False
-    
+
     def compute(self, observation=None):
         reward = 0
         goal_pos, cube_pos, gripper = self.set_points(observation)
@@ -1368,9 +1368,9 @@ class PushReward2(PokeReachReward):
 
         state = [(gripper, point_grg),(gripper, cube_pos)][int(self.point_was_reached)]
         state_last = [(gripper_last, point_grg),(gripper_last, cube_pos)][int(self.point_was_reached)]
- 
+
         cur_dist = self.get_distance(*state)
-        
+
         if cur_dist <= self.dist_offset:
             self.line_was_reached = True
         last_dist = self.get_distance(*state_last)
@@ -1382,13 +1382,13 @@ class PushReward2(PokeReachReward):
         rew_angle, angle= self.angle_reward_push(vector1, vector2)
         rew_dist_ct = self.dist_reward_ct(cube_pos, goal_pos)
         rew_dist_gt = 0
-        
-        if angle > 170 and cur_dist <= self.dist_offset: 
+
+        if angle > 170 and cur_dist <= self.dist_offset:
             #best position -> start moving cube to target
             # reward += 5
-            rew_dist_gt = self.dist_reward_gt(gripper, goal_pos) 
+            rew_dist_gt = self.dist_reward_gt(gripper, goal_pos)
             print(rew_dist_gt, angle, cur_dist)
-        
+
         reward = rew_point * self.k_p + rew_angle * self.k_a + rew_dist_ct * self.k_ct + rew_dist_gt * self.k_gt
 
         # print(reward, rew_point * self.k_p, rew_angle * self.k_a, rew_dist_ct * self.k_ct, rew_dist_gt * self.k_gt)
@@ -1405,38 +1405,38 @@ class PushReward2(PokeReachReward):
             # self.env.p.addUserDebugLine([0, 0, -10], [0, 0, 10],
             #                             lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=1) # Z
             # self.env.p.addUserDebugLine([0, -10, 0], [0, 10, 0],
-            #                             lineColorRGB=(0, 1, 0), lineWidth=3, lifeTime=1) # Y        
+            #                             lineColorRGB=(0, 1, 0), lineWidth=3, lifeTime=1) # Y
             # self.env.p.addUserDebugLine([-10, 0, 0], [10, 0, 0],
             #                             lineColorRGB=(0, 0, 1), lineWidth=3, lifeTime=1) # X
-                
+
             # self.env.p.addUserDebugLine([-10, 1, 0], [10, 1, 0],
             #                             lineColorRGB=(0, 0, 1), lineWidth=3, lifeTime=1)
-            
+
             # self.env.p.addUserDebugLine([0, 0.46, 0.1], [0, 0.55, 0.1],
             #                             lineColorRGB=(0, 0, 1), lineWidth=3, lifeTime=1)
-            
+
             # self.env.p.addUserDebugLine([-0.5, 0.65, 0.05], [0.5, 0.7, 0.05],
             #                             lineColorRGB=(0, 0, 1), lineWidth=3, lifeTime=1)
 
             # self.env.p.addUserDebugLine([-0.5, 0.8, 0.05], [0.5, 0.4, 0.05],
             #                             lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=1)
-                                                             
+
             # help lines
             self.env.p.addUserDebugLine([self.x_target, self.y_target, self.z_cube], [self.x_target, self.y_target, 0.5],
-                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1) 
-             
+                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1)
+
             self.env.p.addUserDebugLine([self.x_target, self.y_target, self.z_cube], gripper,
                                         lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
-            
+
             self.env.p.addUserDebugLine(cube_pos, gripper,
                                         lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
-            
+
             self.env.p.addUserDebugLine(point_grg, gripper,
                                         lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
 
             self.env.p.addUserDebugLine([self.x_target, self.y_target, self.z_cube], point_grg,
                                         lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
-            
+
             self.env.p.addUserDebugText(f"reward:{reward:.3f}, r_ct:{rew_dist_ct * self.k_ct:.3f}, r_gt:{rew_dist_gt * self.k_gt:.3f}, r_p:{rew_point * self.k_p:.3f},"
                                         f" r_a:{rew_angle * self.k_a:.3f}",
                                         [1, 1, 1], textSize=2.0, lifeTime=0.05, textColorRGB=[0.6, 0.0, 0.6])
@@ -1445,15 +1445,15 @@ class PushReward2(PokeReachReward):
 
     def scalar_multiply(self,vector1, vector2):
         return vector1[0]*vector2[0]+vector1[1]*vector2[1]+vector1[2]*vector2[2]
-    
+
     def module(self,vector):
         return math.sqrt(vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2])
-    
-    def angle_between_vectors(self,vector1, vector2): 
+
+    def angle_between_vectors(self,vector1, vector2):
         return np.arccos(self.scalar_multiply(vector1, vector2)/(self.module(vector1)*self.module(vector2))) * 180 / math.pi
-    
+
     def angle_reward_push(self, vector1, vector2):
-        
+
         reward = 0
         if self.last_angle == None:
             self.last_angle = 0
@@ -1462,7 +1462,7 @@ class PushReward2(PokeReachReward):
         if angle > 170:
             reward += angle / 170
         self.last_angle = angle
-        
+
         return reward, angle
 
     def dist_reward_ct(self, cube_position, target_position):
@@ -1477,37 +1477,37 @@ class PushReward2(PokeReachReward):
         self.last_ct_dist = self.get_distance(cube_position, target_position)
 
         return reward
-    
+
     def dist_reward_gt(self, gripper_position, target_position):
         if self.last_gt_dist == None:
             self.last_gt_dist = 0
 
         gt_dist = self.get_distance(gripper_position, target_position)
         reward = self.exp_eval(gt_dist) if gt_dist < self.last_gt_dist else self.lin_penalty(self.last_gt_dist, min_penalty = 1)
-        
+
         self.last_gt_dist = self.get_distance(gripper_position, target_position)
 
         return reward
 
     def set_variables_push(self, cube_position, gripper_position, target_position):
-  
-        self.x_cube = cube_position[0] 
-        self.y_cube = cube_position[1] 
+
+        self.x_cube = cube_position[0]
+        self.y_cube = cube_position[1]
         self.z_cube = cube_position[2]
- 
-        self.x_gripper = gripper_position[0] 
-        self.y_gripper = gripper_position[1] 
+
+        self.x_gripper = gripper_position[0]
+        self.y_gripper = gripper_position[1]
         self.z_gripper = gripper_position[2]
-         
-        self.x_target = target_position[0] 
-        self.y_target = target_position[1] 
+
+        self.x_target = target_position[0]
+        self.y_target = target_position[1]
         self.z_target = target_position[2]
 
     def get_positions_push(self, observation):
 
         target_position = observation["goal_state"]
-        cube_position = observation["actual_state"] 
-        gripper_position = observation["additional_obs"]["endeff_xyz"] 
+        cube_position = observation["actual_state"]
+        gripper_position = observation["additional_obs"]["endeff_xyz"]
 
         return target_position,cube_position,gripper_position
 
@@ -1523,7 +1523,7 @@ class PushReward3(PokeReachReward):
     def compute(self, observation=None):
         reward = 0
         target_position, cube_position, gripper_position = self.get_positions_push(observation)
-        
+
         dist_cg = self.task.calc_distance(cube_position, gripper_position)
         dist_ct = self.task.calc_distance(cube_position, target_position)
 
@@ -1534,8 +1534,8 @@ class PushReward3(PokeReachReward):
 
         # if (self.task.check_object_moved(self.env.task_objects["actual_state"], threshold=1)):
         #     reward = -1
-            
-        
+
+
         self.env.p.addUserDebugText(f"{reward},{approach_reward},{move_reward}", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[1,0,0])
 
         self.rewards_history.append(reward)
@@ -1545,8 +1545,8 @@ class PushReward3(PokeReachReward):
     def get_positions_push(self, observation):
 
         target_position = observation["goal_state"]
-        cube_position = observation["actual_state"] 
-        gripper_position = observation["additional_obs"]["endeff_xyz"] 
+        cube_position = observation["actual_state"]
+        gripper_position = observation["additional_obs"]["endeff_xyz"]
 
         return target_position,cube_position,gripper_position
 
@@ -1563,18 +1563,18 @@ class PushReward(PokeReachReward):
 
         self.x_target = None
         self.y_target = None
-        self.z_target = None 
-        
+        self.z_target = None
+
         self.angle        = None
         self.approach     = None
         self.cube_move    = None
-        self.gripper_move = None 
+        self.gripper_move = None
 
         self.last_angle        = None  #previouse angle GCT (G-gripper, C-cube, T-target)
         self.last_approach     = None  #previouse gripper distance to cube
         self.last_cube_move    = None  #previouse cube distance to target
         self.last_gripper_move = None  #previouse gripper position to target
-        self.dist_grip_to_cube = None 
+        self.dist_grip_to_cube = None
 
         self.k_approach = 1
         self.k_gripper = 1
@@ -1595,39 +1595,39 @@ class PushReward(PokeReachReward):
         self.z_target = None
 
         self.last_angle = None
-    
+
     #previouse angle GCT (G-gripper, C-cube, T-target)
         self.last_approach     = None  #previouse gripper distance to cube
         self.last_cube_move    = None  #previouse cube distance to target
         self.last_gripper_move = None  #previouse gripper position to target
-        self.dist_grip_to_cube = None  
+        self.dist_grip_to_cube = None
 
         self.k_approach = 1
         self.k_gripper = 1
         self.k_cube = 2
         self.k_angle = 0
 
-    def angle_between_vectors(self,vector1, vector2): 
+    def angle_between_vectors(self,vector1, vector2):
         return np.arccos(self.scalar_multiply(vector1, vector2)/(self.module(vector1)*self.module(vector2))) * 180 / math.pi
-    
+
     def scalar_multiply(self,vector1, vector2):
         return vector1[0]*vector2[0]+vector1[1]*vector2[1]+vector1[2]*vector2[2]
-    
+
     def module(self,vector):
         return math.sqrt(vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2])
-    
-    def grip_rew(self): 
+
+    def grip_rew(self):
         if self.last_gripper_move == None:
             self.last_gripper_move = self.gripper_move
-        reward = round(self.last_gripper_move - self.gripper_move, 3)   
+        reward = round(self.last_gripper_move - self.gripper_move, 3)
         self.last_gripper_move = self.gripper_move
         return reward
-    
+
     def cube_rew(self):
         # print("moveRew")
         # if self.last_cube_move == None:
-        #     self.last_cube_move = self.cube_move 
-        # reward = round(self.last_cube_move - self.cube_move,3)  
+        #     self.last_cube_move = self.cube_move
+        # reward = round(self.last_cube_move - self.cube_move,3)
         # if reward > 0:
         #     print("cube move")
         #     reward += 1
@@ -1637,9 +1637,9 @@ class PushReward(PokeReachReward):
 
     def angle_rew(self):
         if self.last_angle == None:
-            self.last_angle = self.angle 
-        reward = round(self.angle - self.last_angle,3) / 10  
-        
+            self.last_angle = self.angle
+        reward = round(self.angle - self.last_angle,3) / 10
+
         self.last_angle = self.angle
         return reward
 
@@ -1659,34 +1659,34 @@ class PushReward(PokeReachReward):
         return True
 
     def set_variables_push(self, target_position,cube_position,gripper_position):
-  
-        self.x_cube = cube_position[0] 
-        self.y_cube = cube_position[1] 
+
+        self.x_cube = cube_position[0]
+        self.y_cube = cube_position[1]
         self.z_cube = cube_position[2]
- 
-        self.x_gripper = gripper_position[0] 
-        self.y_gripper = gripper_position[1] 
+
+        self.x_gripper = gripper_position[0]
+        self.y_gripper = gripper_position[1]
         self.z_gripper = gripper_position[2]
-         
-        self.x_target = target_position[0] 
-        self.y_target = target_position[1] 
+
+        self.x_target = target_position[0]
+        self.y_target = target_position[1]
         self.z_target = target_position[2]
 
     def get_positions_push(self, observation):
 
         target_position = observation["goal_state"]
-        cube_position = observation["actual_state"] 
-        gripper_position = observation["additional_obs"]["endeff_xyz"] 
+        cube_position = observation["actual_state"]
+        gripper_position = observation["additional_obs"]["endeff_xyz"]
 
         return target_position,cube_position,gripper_position
-    
-    def compute(self, observation=None): 
+
+    def compute(self, observation=None):
         target_position, cube_position, gripper_position = self.get_positions_push(observation)
         self.set_variables_push(target_position, cube_position, gripper_position)
 
         vector1 = [self.x_cube - self.x_target, self.y_cube - self.y_target, self.z_cube - self.z_target]
         vector2 = [self.x_cube - self.x_gripper, self.y_cube - self.y_gripper, self.z_cube - self.z_gripper]
-        
+
         self.angle = round(self.angle_between_vectors(vector1, vector2),2)
 
         cube_offset_pos = self.get_point_grg(np.array(target_position),np.array(cube_position))
@@ -1695,7 +1695,7 @@ class PushReward(PokeReachReward):
         self.cube_move = self.task.calc_distance(target_position, cube_position)
         self.gripper_move = self.task.calc_distance(target_position, gripper_position)
         self.dist_grip_to_cube = self.task.calc_distance(gripper_position, cube_position)
-        
+
         if self.approach > 0.1:
             self.k_gripper = 0
         reward = self.approach_rew() * self.k_approach + self.grip_rew() * self.k_gripper # + self.cube_rew() * self.k_cube + self.angle_rew() * self.k_angle
@@ -1704,7 +1704,7 @@ class PushReward(PokeReachReward):
             print("best position")
             reward += self.angle / 100 + 1 / self.dist_grip_to_cube
 
-        # if self.check_cube_position(cube_position) == False: #in purpose to slow gripper 
+        # if self.check_cube_position(cube_position) == False: #in purpose to slow gripper
         #     reward = -0.5
         #     print("cube is not on the table")
 
@@ -1715,11 +1715,11 @@ class PushReward(PokeReachReward):
         self.env.p.addUserDebugLine(cube_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(target_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(cube_position, target_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
-        
+
         self.env.p.addUserDebugLine([self.x_target, self.y_target, self.z_cube], [self.x_target, self.y_target, 0.5],
-                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1) 
+                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1)
         self.env.p.addUserDebugLine([self.x_cube, self.y_cube, self.z_cube], [self.x_cube + 0.1, self.y_cube, self.z_cube],
-                                        lineColorRGB=(1, 0.5, 1), lineWidth=3, lifeTime=1) 
+                                        lineColorRGB=(1, 0.5, 1), lineWidth=3, lifeTime=1)
 
         return reward
 
@@ -1737,9 +1737,9 @@ class ThreeStagePushReward(PokeReachReward):
 
         self.x_target = None
         self.y_target = None
-        self.z_target = None 
-        
-        self.angle        = None 
+        self.z_target = None
+
+        self.angle        = None
         self.approach     = None
         self.cube_move    = None
         self.gripper_move = None
@@ -1751,7 +1751,7 @@ class ThreeStagePushReward(PokeReachReward):
         self.current_network = 0
         self.num_networks = env.num_networks
         self.check_num_networks()
-        # self.network_rewards = [0] * self.num_networks 
+        # self.network_rewards = [0] * self.num_networks
 
     def check_num_networks(self):
         assert self.num_networks <= 3, "ThreeStagePushReward reward can work with maximum 3 networks"
@@ -1775,14 +1775,14 @@ class ThreeStagePushReward(PokeReachReward):
         self.last_gripper_move = None  #previouse gripper position to target
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-    
-    def compute(self, observation=None):  
+
+    def compute(self, observation=None):
         target_position, cube_position, gripper_position = self.get_positions_push(observation)
         self.set_variables_push(target_position, cube_position, gripper_position)
-        
+
         vector1 = [self.x_cube - self.x_target, self.y_cube - self.y_target, self.z_cube - self.z_target]
         vector2 = [self.x_cube - self.x_gripper, self.y_cube - self.y_gripper, self.z_cube - self.z_gripper]
-        
+
         self.angle = round(self.angle_between_vectors(vector1, vector2),2)
 
         cube_offset_pos = self.get_point_grg(np.array(target_position),np.array(cube_position))
@@ -1799,9 +1799,9 @@ class ThreeStagePushReward(PokeReachReward):
         self.env.p.addUserDebugLine(cube_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(target_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(cube_position, target_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
-        
+
         return reward
-    
+
     def decide(self, observation=None):
         if self.approach_network():
             self.current_network = 0
@@ -1809,21 +1809,21 @@ class ThreeStagePushReward(PokeReachReward):
             self.current_network = 1
         if self.move_network():
             self.current_network = 2
-        
+
         return self.current_network
-    
+
     def angle_network(self):
         if self.angle != None and self.approach != None:
             if self.angle < 170 and self.approach <= 0.05:
                 return True
         return False
-    
+
     def approach_network(self):
         if self.approach != None:
             if self.approach > 0.05:
                 return True
         return False
-    
+
     def move_network(self):
         if self.angle != None and self.approach != None:
             if self.angle >= 170 and self.approach <= 0.05:
@@ -1834,7 +1834,7 @@ class ThreeStagePushReward(PokeReachReward):
         # print("moveRew")
         self.cube_move = self.task.calc_distance(target_pos, cube_pos)
         self.gripper_move = self.task.calc_distance(target_pos, grip_pos)
-        
+
         if self.last_cube_move == None:
             self.last_cube_move = self.cube_move
         if self.last_gripper_move == None:
@@ -1842,7 +1842,7 @@ class ThreeStagePushReward(PokeReachReward):
 
         reward = self.last_gripper_move - self.gripper_move
         reward += (self.last_cube_move - self.cube_move)*10
-        
+
         self.last_cube_move = self.cube_move
         self.last_gripper_move = self.gripper_move
         return reward
@@ -1860,45 +1860,45 @@ class ThreeStagePushReward(PokeReachReward):
         # print("angleRew")
         if self.last_angle == None:
             self.last_angle = self.angle
-        
+
         reward = (self.angle - self.last_angle)/10
         #if self.angle > 170:
         #    reward += self.angle / 170
         self.last_angle = self.angle
-        
+
         return reward
-    
-    def angle_between_vectors(self,vector1, vector2): 
+
+    def angle_between_vectors(self,vector1, vector2):
         return np.arccos(self.scalar_multiply(vector1, vector2)/(self.module(vector1)*self.module(vector2))) * 180 / math.pi
-    
+
     def scalar_multiply(self,vector1, vector2):
         return vector1[0]*vector2[0]+vector1[1]*vector2[1]+vector1[2]*vector2[2]
-    
+
     def module(self,vector):
         return math.sqrt(vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2])
-    
+
     def set_variables_push(self, target_position,cube_position,gripper_position):
-  
-        self.x_cube = cube_position[0] 
-        self.y_cube = cube_position[1] 
+
+        self.x_cube = cube_position[0]
+        self.y_cube = cube_position[1]
         self.z_cube = cube_position[2]
- 
-        self.x_gripper = gripper_position[0] 
-        self.y_gripper = gripper_position[1] 
+
+        self.x_gripper = gripper_position[0]
+        self.y_gripper = gripper_position[1]
         self.z_gripper = gripper_position[2]
-         
-        self.x_target = target_position[0] 
-        self.y_target = target_position[1] 
+
+        self.x_target = target_position[0]
+        self.y_target = target_position[1]
         self.z_target = target_position[2]
 
     def get_positions_push(self, observation):
 
         target_position = observation["goal_state"]
-        cube_position = observation["actual_state"] 
-        gripper_position = observation["additional_obs"]["endeff_xyz"] 
+        cube_position = observation["actual_state"]
+        gripper_position = observation["additional_obs"]["endeff_xyz"]
 
         return target_position,cube_position,gripper_position
-    
+
 class TwoStagePushReward2(PokeReachReward):
 
     def __init__(self, env, task):
@@ -1913,8 +1913,8 @@ class TwoStagePushReward2(PokeReachReward):
 
         self.x_target = None
         self.y_target = None
-        self.z_target = None 
-        
+        self.z_target = None
+
         self.approach     = None
         self.cube_move    = None
         self.gripper_move = None
@@ -1925,7 +1925,7 @@ class TwoStagePushReward2(PokeReachReward):
         self.current_network = 0
         self.num_networks = env.num_networks
         self.check_num_networks()
-        # self.network_rewards = [0] * self.num_networks 
+        # self.network_rewards = [0] * self.num_networks
 
     def check_num_networks(self):
         assert self.num_networks <= 2, "ThreeStagePushReward reward can work with maximum 3 networks"
@@ -1948,8 +1948,8 @@ class TwoStagePushReward2(PokeReachReward):
         self.last_gripper_move = None  #previouse gripper position to target
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-    
-    def compute(self, observation=None):  
+
+    def compute(self, observation=None):
         target_position, cube_position, gripper_position = self.get_positions_push(observation)
         self.set_variables_push(target_position, cube_position, gripper_position)
 
@@ -1967,9 +1967,9 @@ class TwoStagePushReward2(PokeReachReward):
         self.env.p.addUserDebugLine(cube_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(target_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(cube_position, target_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
-        
+
         return reward
-    
+
     def decide(self, observation=None):
         if self.approach != None:
             if self.approach > 0.05:
@@ -1977,14 +1977,14 @@ class TwoStagePushReward2(PokeReachReward):
             else:
                 self.current_network = 1
                 self.approach != None
-        
+
         return self.current_network
 
     def move_rew(self, target_pos, cube_pos, grip_pos):
         # print("moveRew")
         self.cube_move = self.task.calc_distance(target_pos, cube_pos)
         self.gripper_move = self.task.calc_distance(target_pos, grip_pos)
-        
+
         if self.last_cube_move == None:
             self.last_cube_move = self.cube_move
         if self.last_gripper_move == None:
@@ -1992,7 +1992,7 @@ class TwoStagePushReward2(PokeReachReward):
 
         reward = self.last_gripper_move - self.gripper_move
         reward += (self.last_cube_move - self.cube_move)*10
-        
+
         self.last_cube_move = self.cube_move
         self.last_gripper_move = self.gripper_move
         return reward
@@ -2005,26 +2005,26 @@ class TwoStagePushReward2(PokeReachReward):
 
         self.last_approach = self.approach
         return reward
-    
+
     def set_variables_push(self, target_position,cube_position,gripper_position):
-  
-        self.x_cube = cube_position[0] 
-        self.y_cube = cube_position[1] 
+
+        self.x_cube = cube_position[0]
+        self.y_cube = cube_position[1]
         self.z_cube = cube_position[2]
- 
-        self.x_gripper = gripper_position[0] 
-        self.y_gripper = gripper_position[1] 
+
+        self.x_gripper = gripper_position[0]
+        self.y_gripper = gripper_position[1]
         self.z_gripper = gripper_position[2]
-         
-        self.x_target = target_position[0] 
-        self.y_target = target_position[1] 
+
+        self.x_target = target_position[0]
+        self.y_target = target_position[1]
         self.z_target = target_position[2]
 
     def get_positions_push(self, observation):
 
         target_position = observation["goal_state"]
-        cube_position = observation["actual_state"] 
-        gripper_position = observation["additional_obs"]["endeff_xyz"] 
+        cube_position = observation["actual_state"]
+        gripper_position = observation["additional_obs"]["endeff_xyz"]
 
         return target_position,cube_position,gripper_position
 
@@ -2042,8 +2042,8 @@ class TwoStagePushReward3(PokeReachReward):
 
         self.x_target = None
         self.y_target = None
-        self.z_target = None 
-        
+        self.z_target = None
+
         self.angle        = None
         self.approach     = None
         self.cube_move    = None
@@ -2056,17 +2056,17 @@ class TwoStagePushReward3(PokeReachReward):
         self.current_network = 0
         self.num_networks = env.num_networks
         self.check_num_networks()
-        # self.network_rewards = [0] * self.num_networks 
+        # self.network_rewards = [0] * self.num_networks
 
-    def angle_between_vectors(self,vector1, vector2): 
+    def angle_between_vectors(self,vector1, vector2):
         return np.arccos(self.scalar_multiply(vector1, vector2)/(self.module(vector1)*self.module(vector2))) * 180 / math.pi
-    
+
     def scalar_multiply(self,vector1, vector2):
         return vector1[0]*vector2[0]+vector1[1]*vector2[1]+vector1[2]*vector2[2]
-    
+
     def module(self,vector):
         return math.sqrt(vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2])
-    
+
     def move_rew(self, target_pos, cube_pos, grip_pos):
         # print("moveRew")
         if self.last_cube_move == None:
@@ -2076,7 +2076,7 @@ class TwoStagePushReward3(PokeReachReward):
 
         reward = self.last_gripper_move - self.gripper_move
         reward += (self.last_cube_move - self.cube_move)*10
-        
+
         self.last_cube_move = self.cube_move
         self.last_gripper_move = self.gripper_move
         return reward
@@ -2089,26 +2089,26 @@ class TwoStagePushReward3(PokeReachReward):
 
         self.last_approach = self.approach
         return reward
-    
+
     def set_variables_push(self, target_position,cube_position,gripper_position):
-  
-        self.x_cube = cube_position[0] 
-        self.y_cube = cube_position[1] 
+
+        self.x_cube = cube_position[0]
+        self.y_cube = cube_position[1]
         self.z_cube = cube_position[2]
- 
-        self.x_gripper = gripper_position[0] 
-        self.y_gripper = gripper_position[1] 
+
+        self.x_gripper = gripper_position[0]
+        self.y_gripper = gripper_position[1]
         self.z_gripper = gripper_position[2]
-         
-        self.x_target = target_position[0] 
-        self.y_target = target_position[1] 
+
+        self.x_target = target_position[0]
+        self.y_target = target_position[1]
         self.z_target = target_position[2]
 
     def get_positions_push(self, observation):
 
         target_position = observation["goal_state"]
-        cube_position = observation["actual_state"] 
-        gripper_position = observation["additional_obs"]["endeff_xyz"] 
+        cube_position = observation["actual_state"]
+        gripper_position = observation["additional_obs"]["endeff_xyz"]
 
         return target_position,cube_position,gripper_position
 
@@ -2134,14 +2134,14 @@ class TwoStagePushReward3(PokeReachReward):
         self.dist_grip_to_cube = None
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-    
-    def compute(self, observation=None):  
+
+    def compute(self, observation=None):
         target_position, cube_position, gripper_position = self.get_positions_push(observation)
         self.set_variables_push(target_position, cube_position, gripper_position)
 
         vector1 = [self.x_cube - self.x_target, self.y_cube - self.y_target, self.z_cube - self.z_target]
         vector2 = [self.x_cube - self.x_gripper, self.y_cube - self.y_gripper, self.z_cube - self.z_gripper]
-        
+
         self.angle = round(self.angle_between_vectors(vector1, vector2),2)
 
         cube_offset_pos = self.get_point_grg(np.array(target_position),np.array(cube_position))
@@ -2158,12 +2158,12 @@ class TwoStagePushReward3(PokeReachReward):
 
         if self.dist_grip_to_cube != None and self.angle != None:
             if self.dist_grip_to_cube <= 0.05 and self.angle > 160:
-                reward += self.angle / 100 - self.dist_grip_to_cube * 10 
+                reward += self.angle / 100 - self.dist_grip_to_cube * 10
 
         if self.cube_move != None and self.gripper_move != None:
             if self.cube_move <= 0.2 and self.gripper_move <= 0.2:
                 reward += 1 - self.cube_move
-                
+
         self.task.check_goal()
         self.rewards_history.append(reward)
         self.env.p.addUserDebugText(f"{reward}, {stage}", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[1,0,0])
@@ -2171,20 +2171,20 @@ class TwoStagePushReward3(PokeReachReward):
         self.env.p.addUserDebugLine(cube_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(target_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(cube_position, target_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
-        
+
         self.env.p.addUserDebugLine([self.x_target, self.y_target, self.z_cube], [self.x_target, self.y_target, 0.5],
-                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1) 
+                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1)
         self.env.p.addUserDebugLine([self.x_target, self.y_target, self.z_cube], [self.x_target + 0.1, self.y_target, self.z_cube],
-                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1) 
+                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1)
         return reward
-    
+
     def decide(self, observation=None):
         if self.approach != None:
             if self.approach > 0.05:
                 self.current_network = 0
             else:
                 self.current_network = 1
-        
+
         return self.current_network
 
 class TwoStagePushReward(PokeReachReward):
@@ -2201,8 +2201,8 @@ class TwoStagePushReward(PokeReachReward):
 
         self.x_target = None
         self.y_target = None
-        self.z_target = None 
-        
+        self.z_target = None
+
         self.angle        = None
         self.approach     = None
         self.cube_move    = None
@@ -2219,22 +2219,22 @@ class TwoStagePushReward(PokeReachReward):
         self.current_network = 0
         self.num_networks = env.num_networks
         self.check_num_networks()
-        # self.network_rewards = [0] * self.num_networks 
+        # self.network_rewards = [0] * self.num_networks
 
-    def angle_between_vectors(self,vector1, vector2): 
+    def angle_between_vectors(self,vector1, vector2):
         return np.arccos(self.scalar_multiply(vector1, vector2)/(self.module(vector1)*self.module(vector2))) * 180 / math.pi
-    
+
     def scalar_multiply(self,vector1, vector2):
         return vector1[0]*vector2[0]+vector1[1]*vector2[1]+vector1[2]*vector2[2]
-    
+
     def module(self,vector):
         return math.sqrt(vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2])
-    
-    def move_rew(self, target_pos, cube_pos, grip_pos):  
-        # print("moveRew") 
+
+    def move_rew(self, target_pos, cube_pos, grip_pos):
+        # print("moveRew")
         if self.last_gripper_move == None:
-            self.last_gripper_move = self.gripper_move 
-        reward = self.last_gripper_move - self.gripper_move   
+            self.last_gripper_move = self.gripper_move
+        reward = self.last_gripper_move - self.gripper_move
         self.last_gripper_move = self.gripper_move
 
         if self.last_cube_move == None:
@@ -2250,7 +2250,7 @@ class TwoStagePushReward(PokeReachReward):
         # print("approachRew")
         if self.last_approach == None:
             self.last_approach = self.approach
-        reward = self.last_approach - self.approach 
+        reward = self.last_approach - self.approach
         self.last_approach = self.approach
         return reward
 
@@ -2265,7 +2265,7 @@ class TwoStagePushReward(PokeReachReward):
 
         x2 = self.x_cube
         y2 = self.y_cube
-        z2 = self.z_cube 
+        z2 = self.z_cube
 
         point_on_line = np.array([x1,y1,z1])
         line_direction = np.array([x2-x1,y2-y1,z2-z1])
@@ -2276,7 +2276,7 @@ class TwoStagePushReward(PokeReachReward):
         dist = np.linalg.norm(point - closest_point)
 
         return dist
-    
+
     def check_cube_position(self, cube_position): # check if cube is not on the table
         # table diagonal coordinates
         # -0.75; 0.05
@@ -2288,24 +2288,24 @@ class TwoStagePushReward(PokeReachReward):
         return False
 
     def set_variables_push(self, target_position,cube_position,gripper_position):
-  
-        self.x_cube = cube_position[0] 
-        self.y_cube = cube_position[1] 
+
+        self.x_cube = cube_position[0]
+        self.y_cube = cube_position[1]
         self.z_cube = cube_position[2]
- 
-        self.x_gripper = gripper_position[0] 
-        self.y_gripper = gripper_position[1] 
+
+        self.x_gripper = gripper_position[0]
+        self.y_gripper = gripper_position[1]
         self.z_gripper = gripper_position[2]
-         
-        self.x_target = target_position[0] 
-        self.y_target = target_position[1] 
+
+        self.x_target = target_position[0]
+        self.y_target = target_position[1]
         self.z_target = target_position[2]
 
     def get_positions_push(self, observation):
 
         target_position = observation["goal_state"]
-        cube_position = observation["actual_state"] 
-        gripper_position = observation["additional_obs"]["endeff_xyz"] 
+        cube_position = observation["actual_state"]
+        gripper_position = observation["additional_obs"]["endeff_xyz"]
 
         return target_position,cube_position,gripper_position
 
@@ -2332,17 +2332,17 @@ class TwoStagePushReward(PokeReachReward):
 
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-    
-    def compute(self, observation=None):  
+
+    def compute(self, observation=None):
         target_position, cube_position, gripper_position = self.get_positions_push(observation)
-        self.set_variables_push(target_position, cube_position, gripper_position) 
-        
+        self.set_variables_push(target_position, cube_position, gripper_position)
+
         self.env.episode_over = self.check_cube_position(cube_position)
         vector1 = [self.x_cube - self.x_target, self.y_cube - self.y_target, self.z_cube - self.z_target]
         vector2 = [self.x_cube - self.x_gripper, self.y_cube - self.y_gripper, self.z_cube - self.z_gripper]
-        
+
         self.angle = round(self.angle_between_vectors(vector1, vector2),2)
-        self.proj_length = self.dist_to_line()  
+        self.proj_length = self.dist_to_line()
 
         cube_offset_pos = self.get_point_grg(np.array(target_position),np.array(cube_position))
 
@@ -2350,16 +2350,16 @@ class TwoStagePushReward(PokeReachReward):
         self.cube_move = self.task.calc_distance(target_position, cube_position)
         self.gripper_move = self.task.calc_distance(target_position, gripper_position)
         self.dist_grip_to_cube = self.task.calc_distance(gripper_position, cube_position)
-        
+
         stage = self.decide(observation)
         target = [[target_position, cube_position, gripper_position],[target_position, cube_position ,gripper_position]][stage]
 
         reward = [self.approach_rew, self.move_rew][stage](*target) + stage
-        
-        # if self.check_cube_position(cube_position) == False: #in purpose to slow gripper 
+
+        # if self.check_cube_position(cube_position) == False: #in purpose to slow gripper
         #     reward = -1
         #     print("cube is not on the table reward = ", reward)
-             
+
         self.task.check_goal()
         self.rewards_history.append(reward)
         self.env.p.addUserDebugText(f" {stage},{round(self.angle,1)}, {round(self.proj_length,3)}, {round(self.dist_grip_to_cube, 3)}", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[1,0,0])
@@ -2367,13 +2367,13 @@ class TwoStagePushReward(PokeReachReward):
         self.env.p.addUserDebugLine(cube_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(target_position, gripper_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
         self.env.p.addUserDebugLine(cube_position, target_position, lineColorRGB=(1, 0, 0), lineWidth=3, lifeTime=0.05)
-        
+
         self.env.p.addUserDebugLine([self.x_target, self.y_target, self.z_cube], [self.x_target, self.y_target, 0.5],
-                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1) 
+                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1)
         self.env.p.addUserDebugLine([self.x_target, self.y_target, self.z_cube], [self.x_target + 0.1, self.y_target, self.z_cube],
-                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1) 
+                                        lineColorRGB=(0, 0.5, 1), lineWidth=3, lifeTime=1)
         return reward
-    
+
     def decide(self, observation=None):
 
         if self.angle != None and self.proj_length != None and self.dist_grip_to_cube != None:
@@ -2383,7 +2383,7 @@ class TwoStagePushReward(PokeReachReward):
                 self.current_network = 1
         else:
             self.current_network = 0
-        
+
         return self.current_network
 
 class DualPoke(PokeReachReward):
@@ -2795,7 +2795,7 @@ class ThreeStagePnP(TwoStagePnP):
         reward = reward * 10
         self.env.p.addUserDebugText(f"Reward:{reward}", [0.7,0.7,1.2], lifeTime=0.1, textColorRGB=[0,125,0])
         self.last_place_dist = dist
-        
+
         if self.last_owner == 2 and dist < 0.1:
             self.env.robot.release_all_objects()
             self.gripped = None
@@ -2850,12 +2850,12 @@ class ThreeStagePnP(TwoStagePnP):
         return False
 
 class DropReward2Stage(PokeReachReward):
-    
+
     def __init__(self, env, task):
         super(PokeReachReward, self).__init__(env, task)
         self.dist_offset               = 0.05
 
-        self.last_points               = None 
+        self.last_points               = None
         self.was_dropped               = False
         self.point_was_reached         = False
         self.touching                  = None
@@ -2868,7 +2868,7 @@ class DropReward2Stage(PokeReachReward):
         self.right_place               = False
         self.drop_episode              = None
         self.get_bonus                 = False
-    
+
     def reset(self):
         self.env.task.current_task     = 0
         self.last_points               = None
@@ -2891,14 +2891,14 @@ class DropReward2Stage(PokeReachReward):
         goal_pos, obj_pos, robot = self.set_points(observation)
         obj_last_pos, robot_last = self.last_points if self.last_points != None else [obj_pos, robot]
         if self.env.episode_steps == 1 and "gripper" not in self.env.robot_action:
-            self.point_above_target  = goal_pos + np.array([0., 0., self.up]) 
+            self.point_above_target  = goal_pos + np.array([0., 0., self.up])
             self.env.robot.magnetize_object(self.env.task_objects["actual_state"])
-        
+
         self.env.p.addUserDebugLine(robot, [1,1,1], lineColorRGB=(255, 255, 255), lineWidth = 1, lifeTime = 0.1)
 
         self.touching = observation["additional_obs"]["touch"][0]
 
-        owner = self.decide(observation)     
+        owner = self.decide(observation)
 
         if owner == 0:
             # print(1)
@@ -2914,7 +2914,7 @@ class DropReward2Stage(PokeReachReward):
             # print(3)
 
         self.check_task([robot, robot_last],[obj_pos, obj_last_pos], goal_pos)
-        
+
         self.task.check_goal()
         reward -= self.penalty_failed()
         if self.get_bonus:
@@ -2929,7 +2929,7 @@ class DropReward2Stage(PokeReachReward):
         self.env.p.addUserDebugText(f"reward: {reward}", [0.5, 0.5, 0.5], textSize=2.0, lifeTime=0.05, textColorRGB=[0.6, 0.0, 0.6])
         # print("reward",r/eward)
         return reward
-    
+
 
     def reward_move_object(self, obj_pos: list, goal: 'numpy.ndarray') -> float:
         """
@@ -2968,14 +2968,14 @@ class DropReward2Stage(PokeReachReward):
         """
         Params:
             :param obj_pos: list of two arrays, current possition and last possition of object.
-            :param target_pos: list 
+            :param target_pos: list
         Controlls if task was compleated correctly.
         Contrlolls:
         - if object was dropped to target,
         - if wasn't thrown.
         """
         # assert "gripper" in self.env.robot_action, "This task or reward require to use gripper action (ex absolute_gripper)!"
-    
+
         # if sqrt(sum((target_pos[:-1]-obj_pos[0][:-1])**2)) < 0.2 and obj_pos[0][-1] < 0.07:
         # print(obj_pos)
         # if obj_pos[0][-1] < 0.07  and self.env.episode_steps > 30:
@@ -3014,20 +3014,20 @@ class DropReward2Stage(PokeReachReward):
         Params:
             :param robot_pos: list of two arrays, current possition and last possition of robot.
             :param obj_pos: list of two arrays, current possition and last possition of object.
-            :param goal_pos: array of goal possition 
+            :param goal_pos: array of goal possition
         Returns:
             :return reward: (float) reward for dropping
         """
-        
+
         reward = 0.
         reward += 0.1 * self.reward_move_object(robot_pos, goal_pos)
         if self.touching:
             reward += 0.5 * self.reward_move_object(obj_pos, goal_pos)
             reward -= 10
         else:
-            reward += 100 
+            reward += 100
         return reward
-    
+
     def decide(self, observation=None) -> int:
         """
         Params:
@@ -3056,7 +3056,7 @@ class DropReward2Stage(PokeReachReward):
         scal_prod = sum(vec1*vec2)
         leng_prod = sqrt(sum(vec1**2)) * sqrt(sum(vec2**2))
         if scal_prod == 0 and leng_prod == 0:
-            return 0. 
+            return 0.
         return acos(scal_prod/leng_prod)*180/pi
 
 
@@ -3075,7 +3075,7 @@ class ThreeStagePnPRot(ThreeStagePnP):
         self.was_near = False
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-    
+
     def compute(self, observation=None):
         """
         Compute reward signal based on distance between 2 objects. The position of the objects must be present in observation.
@@ -3103,7 +3103,7 @@ class ThreeStagePnPRot(ThreeStagePnP):
             self.was_near = True
         #self.env.p.addUserDebugText(f"Network:{self.current_network}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[55,125,0])
         return self.current_network
-    
+
     def find_compute(self, gripper, object):
         # initial reach
         self.env.p.addUserDebugText("find object", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[125,0,0])
@@ -3123,7 +3123,7 @@ class ThreeStagePnPRot(ThreeStagePnP):
         self.network_rewards[0] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
+
     def move_compute(self, object, goal):
         # moving object above goal position (forced 2D reach)
         self.env.p.addUserDebugText("move", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[0,0,125])
@@ -3141,8 +3141,8 @@ class ThreeStagePnPRot(ThreeStagePnP):
         self.network_rewards[ix] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
-    
+
+
     def rotate_compute(self, object, goal):
         # reach of goal position + task object height in Z axis and release
         self.env.p.addUserDebugText("rotate", [0.63,1,0.5], lifeTime=0.1, textColorRGB=[125,125,0])
@@ -3181,7 +3181,7 @@ class ThreeStagePnPRot(ThreeStagePnP):
         if distance < 0.1:
             return True
         return False
-    
+
 class ThreeStageSwipeRot(ThreeStagePnP):
 
     def reset(self):
@@ -3197,14 +3197,14 @@ class ThreeStageSwipeRot(ThreeStagePnP):
         self.was_near = False
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-    
+
     def subgoal_offset(self, goal_position):
-        
+
         offset=[0.2,0.0,0.0]
         subgoal = [goal_position[0]-offset[0],goal_position[1]-offset[1],goal_position[2]-offset[2],goal_position[3],goal_position[4],goal_position[5],goal_position[6]]
         return subgoal
 
-    
+
     def compute(self, observation=None):
         """
         Compute reward signal based on distance between 2 objects. The position of the objects must be present in observation.
@@ -3234,7 +3234,7 @@ class ThreeStageSwipeRot(ThreeStagePnP):
             self.was_near = True
         #self.env.p.addUserDebugText(f"Network:{self.current_network}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[55,125,0])
         return self.current_network
-    
+
     def find_compute(self, gripper, object):
         # initial reach
         self.env.p.addUserDebugText("find sponge", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[125,0,0])
@@ -3254,12 +3254,12 @@ class ThreeStageSwipeRot(ThreeStagePnP):
         self.network_rewards[0] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.59,1,0.6], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
+
     def move_compute(self, object, pregoal):
         # moving object above goal position (forced 2D reach)
         self.env.p.addUserDebugText("prepare swipe", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[0,0,125])
         self.env.p.addUserDebugLine(object[:3], pregoal[:3], lifeTime=0.1)
-        
+
         dist = self.task.calc_distance(object, pregoal)
         self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.59,1,0.65], lifeTime=0.5, textColorRGB=[0, 125, 0])
         if self.last_place_dist is None or self.last_owner != 1:
@@ -3272,13 +3272,13 @@ class ThreeStageSwipeRot(ThreeStagePnP):
         self.network_rewards[ix] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
-    
+
+
     def rotate_compute(self, object, goal):
         # reach of goal position + task object height in Z axis and release
         self.env.p.addUserDebugText("swiping", [0.63,1,0.5], lifeTime=0.1, textColorRGB=[125,125,0])
         self.env.p.addUserDebugLine(object[:3], goal[:3], lifeTime=0.1)
-        
+
         dist = self.task.calc_distance(object, goal)
         self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.59,1,0.65], lifeTime=0.5, textColorRGB=[0, 125, 0])
         if self.last_place_dist is None or self.last_owner != 2:
@@ -3290,7 +3290,7 @@ class ThreeStageSwipeRot(ThreeStagePnP):
         if self.last_rot_dist is None or self.last_owner != 2:
             self.last_rot_dist = rot
         rewardrot = self.last_rot_dist - rot
-        
+
         z_difference = self.task.calc_height_diff (object, goal)
         self.env.p.addUserDebugText("Heightdiff: {}".format(round(z_difference,3)), [0.55,1,0.73], lifeTime=0.5, textColorRGB=[45, 222, 100])
         rewardheight = 0.05 - z_difference
@@ -3326,12 +3326,12 @@ class ThreeStageSwipe(ThreeStageSwipeRot):
         if distance < 0.1 and rot < 0.1:
             return True
         return False
-    
+
     def move_compute(self, object, pregoal):
         # moving object above goal position (forced 2D reach)
         self.env.p.addUserDebugText("prepare swipe", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[0,0,125])
         self.env.p.addUserDebugLine(object[:3], pregoal[:3], lifeTime=0.1)
-        
+
         dist = self.task.calc_distance(object, pregoal)
         self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.59,1,0.65], lifeTime=0.5, textColorRGB=[0, 125, 0])
         if self.last_place_dist is None or self.last_owner != 1:
@@ -3343,7 +3343,7 @@ class ThreeStageSwipe(ThreeStageSwipeRot):
         if self.last_rot_dist is None or self.last_owner != 1:
             self.last_rot_dist = rot
         rewardrot = self.last_rot_dist - rot
-        
+
         reward = reward + rewardrot
 
         self.env.p.addUserDebugText(f"Reward:{reward}", [0.61,1,0.55], lifeTime=0.5, textColorRGB=[0,125,0])
@@ -3359,7 +3359,7 @@ class FourStagePnP(ThreeStagePnP):
 
     def check_num_networks(self):
         assert self.num_networks <= 4, "FourStagePnP reward can work with maximum 4 networks"
-    
+
     def above_compute(self, object, goal):
         # moving object above goal position (forced 2D reach)
         self.env.p.addUserDebugText("move", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[0,0,125])
@@ -3391,7 +3391,7 @@ class FourStagePnP(ThreeStagePnP):
             self.env.episode_failed = True
         self.network_rewards[1] += reward
         return reward
-    
+
     def move_compute(self, object, goal):
         # moving object above goal position (forced 2D reach)
         self.env.p.addUserDebugText("move", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[0,0,125])
@@ -3456,7 +3456,7 @@ class FourStagePnP(ThreeStagePnP):
             self.current_network = 3
             self.was_above = True
         return self.current_network
-    
+
 
 class FourStagePnPRot(ThreeStagePnPRot):
     """
@@ -3491,7 +3491,7 @@ class FourStagePnPRot(ThreeStagePnPRot):
         self.was_near = False
         self.current_network = 0
         self.network_rewards = [0] * self.num_networks
-    
+
     def compute(self, observation=None):
         """
         Compute reward signal based on distance between 2 objects. The position of the objects must be present in observation.
@@ -3521,10 +3521,10 @@ class FourStagePnPRot(ThreeStagePnPRot):
         if self.object_near_goal(object_position, goal_position) or self.was_near:
             self.current_network = 3
             self.was_near = True
-        
+
         #self.env.p.addUserDebugText(f"Network:{self.current_network}", [0.7,0.7,1.0], lifeTime=0.1, textColorRGB=[55,125,0])
         return self.current_network
-    
+
     def find_compute(self, gripper, object):
         # initial reach
         self.env.p.addUserDebugText("find object", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[125,0,0])
@@ -3544,7 +3544,7 @@ class FourStagePnPRot(ThreeStagePnPRot):
         self.network_rewards[0] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
+
     def place_compute(self, object, goal):
         # reach of goal position + task object height in Z axis and release
         self.env.p.addUserDebugText("Subgoal: place", [.65, 1., 0.5], lifeTime=0.1, textColorRGB=[125,125,0])
@@ -3569,7 +3569,7 @@ class FourStagePnPRot(ThreeStagePnPRot):
         self.network_rewards[-1] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.65,1,0.7], lifeTime=0.1, textColorRGB=[0,0,125])
         return reward
-    
+
     def move_compute(self, object, goal):
         # moving object above goal position (forced 2D reach)
         self.env.p.addUserDebugText("move", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[0,0,125])
@@ -3587,8 +3587,8 @@ class FourStagePnPRot(ThreeStagePnPRot):
         self.network_rewards[ix] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[ix]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
-    
+
+
     def rotate_compute(self, object, goal):
         # reach of goal position + task object height in Z axis and release
         self.env.p.addUserDebugText("rotate", [0.63,1,0.5], lifeTime=0.1, textColorRGB=[125,125,0])
@@ -3627,7 +3627,7 @@ class FourStagePnPRot(ThreeStagePnPRot):
         if distance < 0.1:
             return True
         return False
-    
+
 class TwoStagePnPBgrip(TwoStagePnP):
 
     def gripper_reached_object(self, gripper, object):
@@ -3796,7 +3796,7 @@ class FaMaR(ThreeStagePnP):
         self.use_magnet = True
         self.has_left = False
         self.last_traj_idx = 0
-    
+
     def compute(self, observation=None):
         owner = self.decide(observation)
         goal_position, object_position, gripper_position = self.get_positions(observation)
@@ -3815,7 +3815,7 @@ class FaMaR(ThreeStagePnP):
             self.current_network = 2
             self.was_near = True
         return self.current_network
-    
+
     def find_compute(self, gripper, object):
         self.env.p.addUserDebugText("find object", [0.63,1,0.5], lifeTime=0.5, textColorRGB=[125,0,0])
         self.env.robot.set_magnetization(True)
@@ -3824,10 +3824,10 @@ class FaMaR(ThreeStagePnP):
         self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.65,1,0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
         if self.last_find_dist is None:
             self.last_find_dist = dist
-        
+
         reward = self.last_find_dist - dist
         self.env.p.addUserDebugText(f"Reward:{reward}", [0.61,1,0.55], lifeTime=0.5, textColorRGB=[0,125,0])
-        
+
         self.last_find_dist = dist
         self.network_rewards[self.current_network] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[0]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
@@ -3872,16 +3872,16 @@ class FaMaR(ThreeStagePnP):
         self.env.p.addUserDebugText("Distance: {}".format(round(dist,3)), [0.65,1,0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
         if self.last_move_dist is None:
            self.last_move_dist = dist
-        
+
         reward = self.last_move_dist - dist
         self.env.p.addUserDebugText(f"Reward:{reward}", [0.61,1,0.55], lifeTime=0.5, textColorRGB=[0,125,0])
-        
+
         self.last_move_dist = dist
         self.network_rewards[self.current_network] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
-    
+
+
     def rotate_compute(self, object, goal):
         self.env.p.addUserDebugText("rotate", [0.63,1,0.5], lifeTime=0.1, textColorRGB=[125,125,0])
         self.env.robot.set_magnetization(False)
@@ -3894,10 +3894,10 @@ class FaMaR(ThreeStagePnP):
 
         rot = self.task.calc_rot_quat(object, goal)
         self.env.p.addUserDebugText("Rotation: {}".format(round(rot,3)), [0.65,1,0.6], lifeTime=0.5, textColorRGB=[0, 222, 100])
-        if self.last_rot_dist is None: 
+        if self.last_rot_dist is None:
             self.last_rot_dist = rot
         rewardrot = self.last_rot_dist - rot
-        
+
         reward = reward + rewardrot
         self.env.p.addUserDebugText(f"Reward:{reward}", [0.61,1,0.55], lifeTime=0.5, textColorRGB=[0,125,0])
         self.last_place_dist = dist
@@ -3905,7 +3905,7 @@ class FaMaR(ThreeStagePnP):
         self.network_rewards[self.current_network] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
+
     def transform_compute(self, object, goal, offsetgoal):
         self.env.p.addUserDebugText("transform", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,125,0])
         self.env.robot.set_magnetization(True)
@@ -3923,7 +3923,7 @@ class FaMaR(ThreeStagePnP):
         if self.subgoaloffset_dist is None:
            self.subgoaloffset_dist  = dist
         rewardsubgoaloffset = self.subgoaloffset_dist + dist
-        
+
         reward = rewarddist + rewardrot + rewardsubgoaloffset
         self.env.p.addUserDebugText(f"Reward:{reward}", [0.61, 1, 0.55], lifeTime=0.5, textColorRGB=[0, 125, 0])
 
@@ -3933,7 +3933,7 @@ class FaMaR(ThreeStagePnP):
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.65, 1, 0.7], lifeTime=0.5,
                                     textColorRGB=[0, 0, 125])
         return reward
-    
+
     def leave_compute(self, gripper, object):
         self.env.p.addUserDebugText("leave", [0.7,0.7,0.7], lifeTime=0.1, textColorRGB=[125,125,0])
         self.env.p.addUserDebugLine(gripper[:3], object[:3], lifeTime=0.1)
@@ -3949,28 +3949,28 @@ class FaMaR(ThreeStagePnP):
         self.network_rewards[self.current_network] += reward
         self.env.p.addUserDebugText(f"Rewards:{self.network_rewards[-1]}", [0.65,1,0.7], lifeTime=0.5, textColorRGB=[0,0,125])
         return reward
-    
+
     def left_out_of_threshold(self, gripper, object, threshold = 0.2):
         distance = self.task.calc_distance(gripper ,object)
         if distance > threshold:
             return True
         return False
-    
+
 
     def object_near_goal(self, object, goal):
         distance  = self.task.calc_distance(goal, object)
         if distance < 0.1:
             return True
         return False
-    
+
     def subgoal_offset(self, goal_position,offset):
-        
+
         subgoal = [goal_position[0]-offset[0],goal_position[1]-offset[1],goal_position[2]-offset[2],goal_position[3],goal_position[4],goal_position[5],goal_position[6]]
         return subgoal
 
 
 class FaROaM(FaMaR):
-    
+
     def compute(self, observation=None):
 
         owner = self.decide(observation)
@@ -3992,7 +3992,7 @@ class FaROaM(FaMaR):
         return self.current_network
 
 class FaMOaR(FaMaR):
-    
+
     def compute(self, observation=None):
 
         owner = self.decide(observation)
@@ -4014,7 +4014,7 @@ class FaMOaR(FaMaR):
         return self.current_network
 
 class FaMOaT(FaMaR):
-    
+
     def compute(self, observation=None):
 
         owner = self.decide(observation)
@@ -4037,7 +4037,7 @@ class FaMOaT(FaMaR):
         return self.current_network
 
 class FaROaT(FaMaR):
-    
+
     def compute(self, observation=None):
 
         owner = self.decide(observation)
@@ -4057,7 +4057,7 @@ class FaROaT(FaMaR):
             self.current_network = 2
             self.was_near = True
         return self.current_network
-    
+
 
 class FaMaLaFaR(FaMaR):
     def check_num_networks(self):
